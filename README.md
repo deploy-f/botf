@@ -15,7 +15,7 @@ BotF have next features:
 
 ## Documentaion
 
- Visit to our wiki to read botf documentation
+ Visit to [our wiki](https://github.com/deploy-f/botf/wiki) to read botf documentation
 
 ## Install
 
