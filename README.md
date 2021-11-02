@@ -1,5 +1,5 @@
-﻿# botf
-
+﻿# BotF
+![Nuget](https://img.shields.io/nuget/v/Deployf.Botf) ![GitHub](https://img.shields.io/github/license/deploy-f/botf)
 Make beautiful and clear telegram bots with the asp.net-like architecture!
 
 ## Install
