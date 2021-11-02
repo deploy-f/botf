@@ -7,7 +7,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deployf.Botf", "Deployf.Bot
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deployf.Botf.PingExample", "Examples\Deployf.Botf.PingExample\Deployf.Botf.PingExample.csproj", "{47E35AD3-9A22-4E08-8ECA-F9FE5DD58859}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deployf.Botf.HelloExample", "Examples\Deployf.Botf.HelloExample\Deployf.Botf.HelloExample.csproj", "{90E0B4C5-D15B-4AD9-A824-C6E399BFDFDE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deployf.Botf.HelloExample", "Examples\Deployf.Botf.HelloExample\Deployf.Botf.HelloExample.csproj", "{90E0B4C5-D15B-4AD9-A824-C6E399BFDFDE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2A7805FD-58B0-40E8-9B6D-11EF08D5BE75}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
+		build\GetBuildVersion.psm1 = build\GetBuildVersion.psm1
+		.github\workflows\release.yml = .github\workflows\release.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
