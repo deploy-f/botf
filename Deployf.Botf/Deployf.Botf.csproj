@@ -13,12 +13,9 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/deploy-f/botf</RepositoryUrl>
     <PackageTags>telegram;bot;framework</PackageTags>
-    <AssemblyVersion>0.1.0.1</AssemblyVersion>
     <OutputType>Library</OutputType>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	<IsPackable>true</IsPackable>
-	<Version>$(AssemblyVersion)</Version>
-	<UserSecretsId>c1c5bc9a-52fa-4952-ad58-d3b4122e6e17</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
