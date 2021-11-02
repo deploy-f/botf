@@ -3,10 +3,24 @@
 
 Make beautiful and clear telegram bots with the asp.net-like architecture!
 
+BotF have next features:
+
+* long pooling and webhook mode without any changes in the code
+* very convinient way to work with commands and reply buttons
+* integrated pagination with buttons
+* authentication and role-based authorization
+* statemachine for complicated dialogs with users
+* asp.net-like approach to develop bots
+* good performance
+
+## Documentaion
+
+ Visit to our wiki to read botf documentation
+
 ## Install
 
 ```bash
-dotnet add package Deployf.Botf --version 0.1.0
+dotnet add package Deployf.Botf --version 0.1.0.1
 ```
 
 ## Example
