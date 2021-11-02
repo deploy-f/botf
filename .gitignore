@@ -1,2 +1,5 @@
-/bin
-/obj
+**/bin
+**/obj
+**/appsettings.*.json
+.vs
+**/**.csproj.user
