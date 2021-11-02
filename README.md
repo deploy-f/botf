@@ -1,5 +1,5 @@
 ﻿# BotF
-![Nuget](https://img.shields.io/nuget/v/Deployf.Botf) ![GitHub](https://img.shields.io/github/license/deploy-f/botf) [![CI](https://github.com/deploy-f/botf/actions/workflows/dotnet.yml/badge.svg)](https://github.com/deploy-f/botf/actions/workflows/dotnet.yml)  
+[![Nuget](https://img.shields.io/nuget/v/Deployf.Botf)](https://www.nuget.org/packages/Deployf.Botf) [![GitHub](https://img.shields.io/github/license/deploy-f/botf)](https://github.com/deploy-f/botf/blob/master/LICENSE) [![CI](https://github.com/deploy-f/botf/actions/workflows/dotnet.yml/badge.svg)](https://github.com/deploy-f/botf/actions/workflows/dotnet.yml)  
 
 Make beautiful and clear telegram bots with the asp.net-like architecture!
 
