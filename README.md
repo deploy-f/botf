@@ -20,7 +20,7 @@ BotF have next features:
 ## Install
 
 ```bash
-dotnet add package Deployf.Botf --version 0.1.0.1
+dotnet add package Deployf.Botf
 ```
 
 ## Example
