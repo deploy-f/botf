@@ -2,12 +2,12 @@
 
 namespace Deployf.Botf;
 
-public class BotControllersUnknownMiddleware : IUpdateHandler
+public class BotControllersBeforeAllMiddleware : IUpdateHandler
 {
     readonly BotControllersInvoker _invoker;
     readonly BotControllerHandlers _handlers;
 
-    public BotControllersUnknownMiddleware(BotControllersInvoker invoker, BotControllerHandlers handlers)
+    public BotControllersBeforeAllMiddleware(BotControllersInvoker invoker, BotControllerHandlers handlers)
     {
         _invoker = invoker;
         _handlers = handlers;
@@ -15,13 +15,11 @@ public class BotControllersUnknownMiddleware : IUpdateHandler
 
     public async Task HandleAsync(IUpdateContext context, UpdateDelegate next, CancellationToken cancellationToken)
     {
-        if (_handlers.TryGetValue(Handle.Unknown, out var controller))
+        if (_handlers.TryGetValue(Handle.BeforeAll, out var controller))
         {
             await _invoker.Invoke(context, cancellationToken, controller);
         }
-        else
-        {
-            await next(context, cancellationToken);
-        }
+
+        await next(context, cancellationToken);
     }
 }

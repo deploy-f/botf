@@ -1,55 +1,54 @@
 ﻿using Telegram.Bot.Framework.Abstractions;
 
-namespace Deployf.Botf.Controllers
+namespace Deployf.Botf;
+
+public class BotControllersExceptionMiddleware : IUpdateHandler
 {
-    public class BotControllersExceptionMiddleware : IUpdateHandler
+    readonly BotControllersInvoker _invoker;
+    readonly BotControllerHandlers _handlers;
+
+    public BotControllersExceptionMiddleware(BotControllersInvoker invoker, BotControllerHandlers handlers)
     {
-        readonly BotControllersInvoker _invoker;
-        readonly BotControllerHandlers _handlers;
+        _invoker = invoker;
+        _handlers = handlers;
+    }
 
-        public BotControllersExceptionMiddleware(BotControllersInvoker invoker, BotControllerHandlers handlers)
+    public async Task HandleAsync(IUpdateContext context, UpdateDelegate next, CancellationToken cancellationToken)
+    {
+        try
         {
-            _invoker = invoker;
-            _handlers = handlers;
+            await next(context, cancellationToken);
         }
-
-        public async Task HandleAsync(IUpdateContext context, UpdateDelegate next, CancellationToken cancellationToken)
+        catch (UnauthorizedAccessException ex)
         {
-            try
+            if (_handlers.TryGetValue(Handle.Unauthorized, out var controller))
             {
-                await next(context, cancellationToken);
+                await _invoker.Invoke(context, cancellationToken, controller);
             }
-            catch (UnauthorizedAccessException ex)
-            {
-                if (_handlers.TryGetValue(Handle.Unauthorized, out var controller))
-                {
-                    await _invoker.Invoke(context, cancellationToken, controller);
-                }
-                else
-                {
-                    await ProcessException(ex);
-                }
-            }
-            catch (Exception ex)
+            else
             {
                 await ProcessException(ex);
             }
+        }
+        catch (Exception ex)
+        {
+            await ProcessException(ex);
+        }
 
-            async Task ProcessException(Exception ex)
+        async Task ProcessException(Exception ex)
+        {
+            if (!_handlers.TryGetValue(Handle.Exception, out var controller))
             {
-                if (!_handlers.TryGetValue(Handle.Exception, out var controller))
-                {
-                    throw ex;
-                }
+                throw ex;
+            }
 
-                if (controller.GetParameters().Length == 0)
-                {
-                    await _invoker.Invoke(context, cancellationToken, controller);
-                }
-                else
-                {
-                    await _invoker.Invoke(context, cancellationToken, controller, ex);
-                }
+            if (controller.GetParameters().Length == 0)
+            {
+                await _invoker.Invoke(context, cancellationToken, controller);
+            }
+            else
+            {
+                await _invoker.Invoke(context, cancellationToken, controller, ex);
             }
         }
     }

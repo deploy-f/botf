@@ -1,0 +1,13 @@
+﻿{
+  "profiles": {
+    "Deployf.Botf.CalendarKeyboardExample": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:5085",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

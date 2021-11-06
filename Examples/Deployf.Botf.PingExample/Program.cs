@@ -1,6 +1,4 @@
 using Deployf.Botf;
-using Deployf.Botf.Controllers;
-using Deployf.Botf.Extensions;
 
 class Program : BotfProgram
 {

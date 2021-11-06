@@ -1,15 +1,29 @@
-﻿namespace Deployf.Botf.Services
+﻿namespace Deployf.Botf;
+
+public interface IBotUserService
 {
-    public interface IBotUserService
+    ValueTask<(string? id, string[]? roles)> GetUserIdWithRoles(long tgUserId);
+}
+
+public class BotUserService
+{
+    readonly IBotUserService? _userService;
+
+    public BotUserService(IBotUserService userService)
     {
-        ValueTask<(string id, string[] roles)> GetUserIdWithRoles(long tgUserId);
+        _userService = userService;
     }
 
-    public class BotUserService : IBotUserService
+    public BotUserService()
     {
-        public async ValueTask<(string id, string[] roles)> GetUserIdWithRoles(long tgUserId)
+    }
+
+    public async ValueTask<(string? id, string[]? roles)> GetUserIdWithRoles(long tgUserId)
+    {
+        if(_userService != null)
         {
-            return (null, null); ;
+            return await _userService.GetUserIdWithRoles(tgUserId);
         }
+        return (null, null); ;
     }
 }
