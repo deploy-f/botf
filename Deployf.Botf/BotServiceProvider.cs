@@ -1,37 +1,33 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Telegram.Bot.Framework.Abstractions;
+﻿using Telegram.Bot.Framework.Abstractions;
 
-namespace Deployf.Botf.Extensions
+namespace Deployf.Botf;
+
+internal class BotServiceProvider : IBotServiceProvider
 {
-    internal class BotServiceProvider : IBotServiceProvider
+    private readonly IServiceProvider? _container;
+    private readonly IServiceScope? _scope;
+
+    public BotServiceProvider(IApplicationBuilder app)
     {
-        private readonly IServiceProvider _container;
+        _container = app.ApplicationServices;
+    }
 
-        private readonly IServiceScope _scope;
+    public BotServiceProvider(IServiceScope scope)
+    {
+        _scope = scope;
+    }
 
-        public BotServiceProvider(IApplicationBuilder app)
-        {
-            _container = app.ApplicationServices;
-        }
+    public object? GetService(Type serviceType) =>
+        _scope != null
+            ? _scope.ServiceProvider.GetService(serviceType)
+            : _container.GetService(serviceType)
+    ;
 
-        public BotServiceProvider(IServiceScope scope)
-        {
-            _scope = scope;
-        }
+    public IBotServiceProvider CreateScope() =>
+        new BotServiceProvider(_container!.CreateScope());
 
-        public object GetService(Type serviceType) =>
-            _scope != null
-                ? _scope.ServiceProvider.GetService(serviceType)
-                : _container.GetService(serviceType)
-        ;
-
-        public IBotServiceProvider CreateScope() =>
-            new BotServiceProvider(_container.CreateScope());
-
-        public void Dispose()
-        {
-            _scope?.Dispose();
-        }
+    public void Dispose()
+    {
+        _scope?.Dispose();
     }
 }

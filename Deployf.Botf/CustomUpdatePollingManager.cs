@@ -4,54 +4,53 @@ using Telegram.Bot.Requests;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace Deployf.Botf.Extensions
+namespace Deployf.Botf;
+
+public class CustomUpdatePollingManager<TBot> : IUpdatePollingManager<TBot> where TBot : IBot
 {
-    public class CustomUpdatePollingManager<TBot> : IUpdatePollingManager<TBot> where TBot : IBot
+    private readonly UpdateDelegate _updateDelegate;
+    private readonly IBotServiceProvider _rootProvider;
+
+    public CustomUpdatePollingManager(IBotBuilder botBuilder, IBotServiceProvider rootProvider)
     {
-        private readonly UpdateDelegate _updateDelegate;
-        private readonly IBotServiceProvider _rootProvider;
+        _updateDelegate = botBuilder.Build();
+        _rootProvider = rootProvider;
+    }
 
-        public CustomUpdatePollingManager(IBotBuilder botBuilder, IBotServiceProvider rootProvider)
+    public async Task RunAsync(
+      GetUpdatesRequest? requestParams = null,
+      CancellationToken cancellationToken = default)
+    {
+        var bot = (TBot)_rootProvider.GetService(typeof(TBot));
+        await bot.Client.DeleteWebhookAsync(false, cancellationToken);
+
+        var getUpdatesRequest = requestParams ?? new GetUpdatesRequest
         {
-            _updateDelegate = botBuilder.Build();
-            _rootProvider = rootProvider;
-        }
+            Offset = 0,
+            Timeout = 500,
+            AllowedUpdates = Array.Empty<UpdateType>()
+        };
+        requestParams = getUpdatesRequest;
 
-        public async Task RunAsync(
-          GetUpdatesRequest requestParams = null,
-          CancellationToken cancellationToken = default)
+        while (!cancellationToken.IsCancellationRequested)
         {
-            var bot = (TBot)_rootProvider.GetService(typeof(TBot));
-            await bot.Client.DeleteWebhookAsync(false, cancellationToken);
+            var updates = await bot.Client.MakeRequestAsync(requestParams, cancellationToken);
 
-            var getUpdatesRequest = requestParams ?? new GetUpdatesRequest
+            foreach (var item in updates)
             {
-                Offset = 0,
-                Timeout = 500,
-                AllowedUpdates = Array.Empty<UpdateType>()
-            };
-            requestParams = getUpdatesRequest;
-
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                var updates = await bot.Client.MakeRequestAsync(requestParams, cancellationToken);
-
-                foreach (var item in updates)
-                {
-                    ProcessUpdate(bot, item, cancellationToken);
-                }
-
-                if (updates.Length != 0)
-                    requestParams.Offset = updates[updates.Length - 1].Id + 1;
+                ProcessUpdate(bot, item, cancellationToken);
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
+            if (updates.Length != 0)
+                requestParams.Offset = updates[updates.Length - 1].Id + 1;
         }
 
-        async void ProcessUpdate(TBot bot, Update item, CancellationToken cancellationToken)
-        {
-            using IBotServiceProvider scopeProvider = _rootProvider.CreateScope();
-            await _updateDelegate(new UpdateContext(bot, item, scopeProvider), cancellationToken);
-        }
+        cancellationToken.ThrowIfCancellationRequested();
+    }
+
+    async void ProcessUpdate(TBot bot, Update item, CancellationToken cancellationToken)
+    {
+        using IBotServiceProvider scopeProvider = _rootProvider.CreateScope();
+        await _updateDelegate(new UpdateContext(bot, item, scopeProvider), cancellationToken);
     }
 }

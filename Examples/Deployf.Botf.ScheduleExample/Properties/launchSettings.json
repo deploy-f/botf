@@ -1,0 +1,14 @@
+﻿{
+  "profiles": {
+    "Deployf.Botf.ScheduleExample": {
+      "commandName": "Project",
+      "hotReloadProfile": "aspnetcore",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:5043",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

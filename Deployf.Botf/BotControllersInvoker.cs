@@ -1,81 +1,79 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Reflection;
+﻿using System.Reflection;
 using Telegram.Bot.Framework.Abstractions;
 
-namespace Deployf.Botf.Controllers
+namespace Deployf.Botf;
+
+public class BotControllersInvoker
 {
-    public class BotControllersInvoker
+    readonly ILogger<BotControllersInvoker> _log;
+    readonly IServiceProvider _services;
+
+    public BotControllersInvoker(ILogger<BotControllersInvoker> log, IServiceProvider services)
     {
-        readonly ILogger<BotControllersInvoker> _log;
-        readonly IServiceProvider _services;
+        _log = log;
+        _services = services;
+    }
 
-        public BotControllersInvoker(ILogger<BotControllersInvoker> log, IServiceProvider services)
+    public async Task Invoke(IUpdateContext ctx, CancellationToken token, MethodInfo method, params object[] args)
+    {
+        var controller = (BotControllerBase?)_services.GetService(method.DeclaringType!);
+        controller.Init(ctx, token);
+        await InvokeInternal(controller, method, args);
+    }
+
+    public async Task<bool> Invoke(IUpdateContext context)
+    {
+        var isPresented = context.Items.TryGetValue("controller", out var value) && value is BotControllerBase;
+        if (!isPresented)
         {
-            _log = log;
-            _services = services;
+            return false;
         }
 
-        public async Task Invoke(IUpdateContext ctx, CancellationToken token, MethodInfo method, params object[] args)
+        var controller = value as BotControllerBase;
+
+        var method = (MethodInfo)context.Items["action"];
+        var args = (object[])context.Items["args"];
+        await InvokeInternal(controller, method, args);
+
+        return true;
+    }
+
+    private async Task<object?> InvokeInternal(BotControllerBase? controller, MethodInfo method, object[] args)
+    {
+        var param = method.GetParameters();
+        if (args.Length != param.Length)
         {
-            var controller = (BotControllerBase?)_services.GetService(method.DeclaringType);
-            controller.Init(ctx, token);
-            await InvokeInternal(controller, method, args);
+            throw new IndexOutOfRangeException();
         }
 
-        public async Task<bool> Invoke(IUpdateContext context)
+        var typedParams = param.Select((p, i) => (object)(p.ParameterType.Name switch
         {
-            var isPresented = context.Items.TryGetValue("controller", out var value) && value is BotControllerBase;
-            if (!isPresented)
-            {
-                return false;
-            }
+            nameof(Int32) => int.Parse(args[i].ToString()),
+            nameof(Single) => float.Parse(args[i].ToString()),
+            _ => MapDefault(p.ParameterType, args[i]),
+        })).ToArray();
 
-            var controller = value as BotControllerBase;
+        _log.LogDebug("Begin execute action {Controller}.{Method}. Arguments: {@Args}",
+            method.DeclaringType.Name,
+            method.Name,
+            typedParams);
 
-            var method = (MethodInfo)context.Items["action"];
-            var args = (object[])context.Items["args"];
-            await InvokeInternal(controller, method, args);
-
-            return true;
+        var result = method.Invoke(controller, typedParams);
+        if (result is Task task)
+        {
+            await task;
         }
 
-        private async Task<object?> InvokeInternal(BotControllerBase? controller, MethodInfo method, object[] args)
+        return result;
+    }
+
+    static object MapDefault(Type type, object input)
+    {
+        if (type.IsAssignableFrom(input.GetType()))
         {
-            var param = method.GetParameters();
-            if (args.Length != param.Length)
-            {
-                throw new IndexOutOfRangeException();
-            }
-
-            var typedParams = param.Select((p, i) => (object)(p.ParameterType.Name switch
-            {
-                nameof(Int32) => int.Parse(args[i].ToString()),
-                nameof(Single) => float.Parse(args[i].ToString()),
-                _ => MapDefault(p.ParameterType, args[i]),
-            })).ToArray();
-
-            _log.LogDebug("Begin execute action {Controller}.{Method}. Arguments: {@Args}",
-                method.DeclaringType.Name,
-                method.Name,
-                typedParams);
-
-            var result = method.Invoke(controller, typedParams);
-            if (result is Task task)
-            {
-                await task;
-            }
-
-            return result;
+            return input;
         }
 
-        static object MapDefault(Type type, object input)
-        {
-            if (type.IsAssignableFrom(input.GetType()))
-            {
-                return input;
-            }
-
-            throw new NotImplementedException();
-        }
+        throw new NotImplementedException();
     }
 }
