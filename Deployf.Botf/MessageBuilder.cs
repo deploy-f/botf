@@ -12,6 +12,7 @@ public class MessageBuilder
     public List<List<InlineKeyboardButton>>? Reply { get; set; }
     public int ReplyToMessageId { get; set; } = 0;
     public ParseMode ParseMode { get; set; } = ParseMode.Default;
+    public bool IsDirty { get; set; }
 
     public string Message => BufferedMessage?.ToString() ?? string.Empty;
 
@@ -30,13 +31,13 @@ public class MessageBuilder
     public MessageBuilder SetMarkup(IReplyMarkup markup)
     {
         Markup = markup;
+        IsDirty = true;
         return this;
     }
 
     public MessageBuilder PushL(string line = "")
     {
-        Push(line);
-        Push();
+        Push(line + "\n");
         return this;
     }
 
@@ -47,7 +48,8 @@ public class MessageBuilder
             BufferedMessage = new StringBuilder();
         }
 
-        BufferedMessage.AppendLine(line);
+        BufferedMessage.Append(line);
+        IsDirty = true;
         return this;
     }
 
@@ -59,6 +61,7 @@ public class MessageBuilder
         }
 
         Reply.Add(new List<InlineKeyboardButton>());
+        IsDirty = true;
         return this;
     }
 
@@ -91,6 +94,7 @@ public class MessageBuilder
 
         Reply!.Last().Add(button);
         Markup = new InlineKeyboardMarkup(Reply!.Where(c => c.Count > 0));
+        IsDirty = true;
         return this;
     }
 

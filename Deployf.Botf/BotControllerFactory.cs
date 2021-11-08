@@ -18,8 +18,7 @@ public class BotControllerFactory
                 .Where(c => c.templ != null))
 
             .SelectMany(c => c)
-
-            .ToDictionary(c => c.templ, c => c.m);
+            .ToList();
 
         return new BotControllerRoutes(keys);
     }

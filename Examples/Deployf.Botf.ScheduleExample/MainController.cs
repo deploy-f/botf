@@ -7,55 +7,54 @@ class MainController : BotControllerBase
     readonly TableQuery<User> _users;
     readonly SQLiteConnection _db;
     readonly ILogger<MainController> _logger;
+    readonly BotfOptions _options;
 
-    public MainController(TableQuery<User> users, SQLiteConnection db, ILogger<MainController> logger)
+    public MainController(TableQuery<User> users, SQLiteConnection db, ILogger<MainController> logger, BotfOptions options)
     {
         _users = users;
         _db = db;
         _logger = logger;
+        _options = options;
     }
-    
 
-    [Action("/start")]
-    public async Task Start()
+
+    [Action("/start", "start the bot")]
+    public void Start()
     {
-        await Send($"Hello!1");
+        PushL("Hello!");
+        PushL("This bot allow you and users to book the time slot");
+        PushL();
+        PushL($"Link to book your free slots: https://t.me/{_options.Username}?start={FromId.Base64()}");
     }
 
-    [Action("/timezone")]
-    public async Task Timezone()
+    [Action("/timezone", "set language and timezone")]
+    public void Timezone()
     {
         var user = _users.FirstOrDefault(c => c.Id == FromId);
 
-        PushL($"Current time zone: {user.Timezone}");
+        Push($"Current time zone: {user.Timezone}");
 
         Button("Russua", Q(SetTimezone, "ru"));
         Button("Ukraine", Q(SetTimezone, "ua"));
         Button("USA", Q(SetTimezone, "usa"));
-
-        await SetTimezone(null!);
-
-        await Send();
     }
 
     [Action]
-    public async Task SetTimezone(string zone)
+    public void SetTimezone(string zone)
     {
         var user = _users.First(c => c.Id == FromId);
         user.Timezone = zone;
         _db.Update(user);
 
-        await AnswerCallback(null);
-
-        await Send("Timezone changed");
+        Push("Timezone changed");
     }
 
 
     // if user sent unknown action, say it to them
     [On(Handle.Unknown)]
-    public async Task Unknown()
+    public void Unknown()
     {
-        await Send("Unknown command. Or use /start command");
+        Push("Unknown command. Or use /start command");
     }
 
     // handle all messages before botf has processed it
@@ -71,7 +70,7 @@ class MainController : BotControllerBase
                 Id = FromId,
                 FullName = Context!.GetUserFullName(),
                 Username = Context!.GetUsername()!,
-                Roles = UserRole.none
+                Roles = UserRole.scheduler
             };
             _db.Insert(user);
             _logger.LogInformation("Added user {tgId} at first time", user.Id);
@@ -80,16 +79,16 @@ class MainController : BotControllerBase
 
     // handle all errors while message are processing
     [On(Handle.Exception)]
-    public async Task OnException(Exception e)
+    public void OnException(Exception e)
     {
         _logger.LogError(e, "Unhandled exception");
-        await Send("Something went wrong");
+        Push("Something went wrong");
     }
 
     // we'll handle auth error if user without roles try use action marked with [Authorize("policy")]
     [On(Handle.Unauthorized)]
-    public async Task Forbidden()
+    public void Forbidden()
     {
-        await Send("Forbidden!");
+        Push("Forbidden!");
     }
 }

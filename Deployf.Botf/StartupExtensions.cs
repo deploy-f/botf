@@ -1,6 +1,7 @@
 ﻿using Telegram.Bot.Framework;
 using Telegram.Bot.Framework.Abstractions;
 using Telegram.Bot.Requests;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace Deployf.Botf;
@@ -35,6 +36,18 @@ public static class StartupExtensions
             app.UseTelegramBotWebhook<BotfBot>(builder);
             app.BotfEnsureWebhookSet<BotfBot>();
         }
+
+        var bot = app.ApplicationServices.GetRequiredService<BotfBot>();
+        var routes = app.ApplicationServices.GetRequiredService<BotControllerRoutes>();
+        var commands = routes.Where(c => c.command.StartsWith("/"))
+            .Where(c => string.IsNullOrEmpty(c.action.GetAuthPolicy()))
+            .Where(c => c.action.GetParameters().Length == 0)
+            .Where(c => !string.IsNullOrEmpty(c.action.GetActionDescription()))
+            .Select(c => new BotCommand { Command = c.command, Description = c.action.GetActionDescription() })
+            .ToList();
+
+        bot.Client.SetMyCommandsAsync(commands).GetAwaiter().GetResult();
+
 
         return app;
     }

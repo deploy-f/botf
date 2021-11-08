@@ -15,6 +15,11 @@ public abstract class BotControllerBase
     protected CancellationToken CancelToken { get; private set; }
     protected ITelegramBotClient? Client { get; set; }
     protected MessageBuilder Message { get; set; } = new MessageBuilder();
+    protected bool IsDirty
+    {
+        get => Message.IsDirty;
+        set => Message.IsDirty = value;
+    }
 
     public virtual void Init(IUpdateContext context, CancellationToken cancellationToken)
     {
@@ -26,6 +31,41 @@ public abstract class BotControllerBase
         Message = new MessageBuilder();
     }
 
+    protected void State(object state)
+    {
+        var sm = Context!.Services.GetRequiredService<IChatFSM>();
+        sm.Set(ChatId, state);
+    }
+
+    public async Task Call<T>(Func<T, Task> method) where T : BotControllerBase
+    {
+        var controller = Context!.Services.GetRequiredService<T>();
+        controller.Init(Context, CancelToken);
+        controller.User = User;
+        controller.Message = Message;
+        await controller.OnBeforeCall();
+        await method(controller);
+        await controller.OnAfterCall();
+    }
+
+    public virtual async Task OnBeforeCall()
+    {
+    }
+
+    public virtual async Task OnAfterCall()
+    {
+        if (!(Context.Bot is BotfBot bot))
+        {
+            return;
+        }
+
+        if (bot.Options.AutoSend && IsDirty)
+        {
+            await SendOrUpdate();
+        }
+    }
+
+    #region sending
     public async Task SendOrUpdate()
     {
         if (Context!.Update.Type == UpdateType.CallbackQuery)
@@ -40,6 +80,7 @@ public abstract class BotControllerBase
 
     protected async Task Send(string text, ParseMode mode)
     {
+        IsDirty = false;
         await Context!.Bot.Client.SendTextMessageAsync(
             Context!.GetSafeChatId(),
             text,
@@ -61,6 +102,7 @@ public abstract class BotControllerBase
 
     public async Task Update(InlineKeyboardMarkup? markup = null, string? text = null, ParseMode mode = ParseMode.Html)
     {
+        IsDirty = false;
         await Context!.Bot.Client.EditMessageTextAsync(
             Context!.GetSafeChatId(),
             Context!.GetSafeMessageId().GetValueOrDefault(),
@@ -88,13 +130,6 @@ public abstract class BotControllerBase
             cancellationToken: CancelToken);
     }
 
-    protected void State(object state)
-    {
-        var sm = Context!.Services.GetRequiredService<IChatFSM>();
-        sm.Set(ChatId, state);
-    }
-
-
     public async Task Send()
     {
         var text = Message.Message;
@@ -113,15 +148,7 @@ public abstract class BotControllerBase
             await SendHtml(text);
         }
     }
-
-    public async Task Call<T>(Func<T, Task> method) where T : BotControllerBase
-    {
-        var controller = Context!.Services.GetRequiredService<T>();
-        controller.Init(Context, CancelToken);
-        controller.User = User;
-        controller.Message = Message;
-        await method(controller);
-    }
+    #endregion
 
     #region formatting
     protected void Markup(IReplyMarkup markup)
@@ -223,7 +250,7 @@ public abstract class BotControllerBase
     public string FPath(string controller, string action, params object[] args)
     {
         var routes = Context!.Services.GetRequiredService<BotControllerRoutes>();
-        var hit = routes.FindTemplate(controller, action);
+        var hit = routes.FindTemplate(controller, action, args);
         if (hit.template == null)
         {
             throw new KeyNotFoundException($"Item with controller and action ({controller}, {action}) not found");

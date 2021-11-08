@@ -31,11 +31,10 @@ public class BotControllersMiddleware : IUpdateHandler
                 entries = payload.Split("/", StringSplitOptions.RemoveEmptyEntries);
             }
             var key = entries[0];
+            var arguments = entries.Skip(1).ToArray();
 
-            if (_map.TryGetValue(key, out var value) && value != null)
+            if (_map.TryGetValue(key, arguments, out var value) && value != null)
             {
-                var arguments = entries.Skip(1).ToArray();
-
                 _log.LogDebug("Found bot action {Controller}.{Method}. Payload: {Payload} Arguments: {@Args}",
                     value.DeclaringType.Name,
                     value.Name,

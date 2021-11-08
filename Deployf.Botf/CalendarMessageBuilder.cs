@@ -8,16 +8,18 @@ public class CalendarMessageBuilder
     private CalendarDepth _depth { get; set; }
 
     private Func<int, bool>? _filterYear { get; set; }
-    private Func<int, bool>? _filterMonth { get; set; }
-    private Func<int, bool>? _filterDay { get; set; }
-    private Func<int, bool>? _filterHour { get; set; }
-    private Func<int, bool>? _filterMinute { get; set; }
+    private Func<DateTime, bool>? _filterMonth { get; set; }
+    private Func<DateTime, bool>? _filterDay { get; set; }
+    private Func<DateTime, bool>? _filterHour { get; set; }
+    private Func<DateTime, bool>? _filterMinute { get; set; }
 
-    private Func<int, string>? _formatYear { get; set; }
-    private Func<int, string>? _formatMonth { get; set; }
-    private Func<int, string>? _formatDay { get; set; }
-    private Func<int, string>? _formatHour { get; set; }
-    private Func<int, string>? _formatMinute { get; set; }
+    private Func<DateTime, string>? _formatYear { get; set; }
+    private Func<DateTime, string>? _formatMonth { get; set; }
+    private Func<DateTime, string>? _formatDay { get; set; }
+    private Func<DateTime, string>? _formatHour { get; set; }
+    private Func<DateTime, string>? _formatMinute { get; set; }
+
+    private Action<DateTime, CalendarDepth, MessageBuilder>? _formatText { get; set;}
 
     private Func<DateTime, string>? _select { get; set; }
     private Func<string, string>? _nav { get; set; }
@@ -63,61 +65,79 @@ public class CalendarMessageBuilder
         return this;
     }
 
-    public CalendarMessageBuilder FilterYear(Func<int, bool>? filter)
+    public CalendarMessageBuilder SkipYear(Func<int, bool>? filter)
     {
         _filterYear = filter;
         return this;
     }
 
-    public CalendarMessageBuilder FilterMonth(Func<int, bool>? filter)
+    public CalendarMessageBuilder SkipMonth(Func<DateTime, bool>? filter)
     {
         _filterMonth = filter;
         return this;
     }
 
-    public CalendarMessageBuilder FilterDay(Func<int, bool>? filter)
+    public CalendarMessageBuilder SkipDay(Func<DateTime, bool>? filter)
     {
         _filterDay = filter;
         return this;
     }
 
-    public CalendarMessageBuilder FilterHour(Func<int, bool>? filter)
+    public CalendarMessageBuilder SkipHour(Func<DateTime, bool>? filter)
     {
         _filterHour = filter;
         return this;
     }
 
-    public CalendarMessageBuilder FilterMinute(Func<int, bool>? filter)
+    public CalendarMessageBuilder SkipMinute(Func<DateTime, bool>? filter)
     {
         _filterMinute = filter;
         return this;
     }
 
-    public CalendarMessageBuilder FormatYear(Func<int, string>? format)
+    public CalendarMessageBuilder SkipFrom(DateTime dt)
+    {
+        return this.SkipYear(d => d > dt.Year)
+            .SkipMonth(d => d > new DateTime(dt.Year, dt.Month, 1))
+            .SkipDay(d => d > new DateTime(dt.Year, dt.Month, dt.Day))
+            .SkipHour(d => d > new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, 0, 0))
+            .SkipMinute(d => d > new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, dt.Minute, 0));
+    }
+
+    public CalendarMessageBuilder SkipTo(DateTime dt)
+    {
+        return this.SkipYear(d => d < dt.Year)
+            .SkipMonth(d => d < new DateTime(dt.Year, dt.Month, 1))
+            .SkipDay(d => d < new DateTime(dt.Year, dt.Month, dt.Day))
+            .SkipHour(d => d < new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, 0, 0))
+            .SkipMinute(d => d < new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, dt.Minute, 0));
+    }
+
+    public CalendarMessageBuilder FormatYear(Func<DateTime, string>? format)
     {
         _formatYear = format;
         return this;
     }
 
-    public CalendarMessageBuilder FormatMonth(Func<int, string>? format)
+    public CalendarMessageBuilder FormatMonth(Func<DateTime, string>? format)
     {
         _formatMonth = format;
         return this;
     }
 
-    public CalendarMessageBuilder FormaDay(Func<int, string>? format)
+    public CalendarMessageBuilder FormaDay(Func<DateTime, string>? format)
     {
         _formatDay = format;
         return this;
     }
 
-    public CalendarMessageBuilder FormatHour(Func<int, string>? format)
+    public CalendarMessageBuilder FormatHour(Func<DateTime, string>? format)
     {
         _formatHour = format;
         return this;
     }
 
-    public CalendarMessageBuilder FormatMinute(Func<int, string>? format)
+    public CalendarMessageBuilder FormatMinute(Func<DateTime, string>? format)
     {
         _formatMinute = format;
         return this;
@@ -135,10 +155,16 @@ public class CalendarMessageBuilder
         return this;
     }
 
+    public CalendarMessageBuilder FormatText(Action<DateTime, CalendarDepth, MessageBuilder> format)
+    {
+        _formatText = format;
+        return this;
+    }
+
 
     public CalendarMessageBuilder SetState(string state)
     {
-        _state = new StateValue(state);
+        _state.TryOverrideState(state);
         return this;
     }
 
@@ -156,6 +182,8 @@ public class CalendarMessageBuilder
         {
             throw new ArgumentException($"You should call {nameof(OnSelectPath)} before to call `Build`");
         }
+
+        _formatText?.Invoke(_state, _state.Depth, b);
 
         if(_state.Hour != null)
         {
@@ -183,25 +211,33 @@ public class CalendarMessageBuilder
     {
         var now = DateTime.Now.Year;
         var query = Enumerable.Range(now - 5, 30)
-            .Select(y => y)
+            .Where(y => !(_filterYear?.Invoke(y) ?? false))
             .AsQueryable();
-        var pager = pagingService.Paging(query, new PageFilter { Page = _state.YearPage, Count = 5 });
+        var pager = pagingService.Paging(query, new PageFilter { Page = _state.YearPage, Count = 6 });
+
+        var itemButton = (int year) =>
+        {
+            var state = _state with { Year = year };
+            var label = _formatYear?.Invoke(state) ?? year.ToString();
+            var callback = click(state);
+            return (label, callback);
+        };
 
         b.Pager(
             pager,
-            i => (_formatYear?.Invoke(i) ?? i.ToString(), click(i)),
+            itemButton,
             _nav!("{0}"),
             3
         );
 
-        string click(int year)
+        string click(StateValue state)
         {
             if(_depth == CalendarDepth.Years)
             {
-                return _select!(new DateTime(year, 1, 1));
+                return _select!(state);
             }
 
-            return _nav!(_state with { Year = year });
+            return _nav!(state);
         }
     }
 
@@ -222,97 +258,169 @@ public class CalendarMessageBuilder
             "Nov",
             "Dec"
         };
-
-        for (int i = 0; i < 12; i++)
+        var list = new List<(string text, string payload)>();
+        for (int month = 1; month <= 12; month++)
         {
-            if (i % 3 == 0 && i != 0)
+            var state = _state with { Month = month };
+
+            var skip = _filterMonth?.Invoke(state) ?? false;
+            if (skip)
+            {
+                continue;
+            }
+
+            list.Add((_formatMonth?.Invoke(state) ?? data[month - 1], click(state)));
+        }
+
+        var preffer = PrefferToMinDiv(list.Count, 3);
+        for (int i = 0; i < list.Count; i++)
+        {
+            if (i % preffer == 0 && i != 0)
             {
                 b.MakeButtonRow();
             }
-
-            b.Button(_formatMonth?.Invoke(i+1) ?? data[i], click(i+1));
+            b.Button(list[i].text, list[i].payload);
         }
+
         b.RowButton("Back to years", _nav!(_state with { Year = null }));
 
-        string click(int month)
+        string click(StateValue state)
         {
             if (_depth == CalendarDepth.Months)
             {
-                return _select!(new DateTime(_state.Year.Value, month, 1));
+                return _select!(state);
             }
 
-            return _nav!(_state with { Month = month });
+            return _nav!(state);
         }
     }
 
     private void BuildDay(MessageBuilder b)
     {
-        var daysInMonth = DateTime.DaysInMonth(_state.Year.Value, _state.Month.Value);
-        for (int i = 0; i < daysInMonth; i++)
+        var list = new List<(string text, string payload)>();
+        var daysInMonth = DateTime.DaysInMonth(_state.Year.GetValueOrDefault(), _state.Month.GetValueOrDefault());
+        for (int day = 1; day <= daysInMonth; day++)
         {
-            if (i % 5 == 0 && i != 0)
+            var state = _state with { Day = day };
+            var skip = _filterDay?.Invoke(state) ?? false;
+            if (skip)
+            {
+                continue;
+            }
+
+            list.Add((_formatDay?.Invoke(state) ?? day.ToString(), click(state)));
+        }
+
+        var preffer = PrefferToMinDiv(list.Count, 5);
+        for (int i = 0; i < list.Count; i++)
+        {
+            if (i % preffer == 0 && i != 0)
             {
                 b.MakeButtonRow();
             }
-
-            b.Button(_formatDay?.Invoke(i+1) ?? (i + 1).ToString(), click(i+1));
+            b.Button(list[i].text, list[i].payload);
         }
+
         b.RowButton("Back to month", _nav!(_state with { Month = null }));
 
-        string click(int day)
+        string click(StateValue state)
         {
             if (_depth == CalendarDepth.Days)
             {
-                return _select!(new DateTime(_state.Year.Value, _state.Month.Value, day));
+                return _select!(state);
             }
 
-            return _nav!(_state with { Day = day });
+            return _nav!(state);
         }
     }
 
     private void BuildHour(MessageBuilder b)
     {
-        for (int i = 0; i < 23; i++)
+        var list = new List<(string text, string payload)>();
+        for (int hour = 0; hour < 23; hour++)
         {
-            if (i % 6 == 0 && i != 0)
+            var state = _state with { Hour = hour };
+            var skip = _filterHour?.Invoke(state) ?? false;
+            if (skip)
+            {
+                continue;
+            }
+
+            list.Add((_formatHour?.Invoke(state) ?? hour.ToString("00"), click(state)));
+        }
+
+        var preffer = PrefferToMinDiv(list.Count, 4);
+        for (int i = 0; i < list.Count; i++)
+        {
+            if (i % preffer == 0 && i != 0)
             {
                 b.MakeButtonRow();
             }
-            var hour = i + 1;
-            b.Button(_formatHour?.Invoke(hour) ?? (hour).ToString("00"), click(hour));
+            b.Button(list[i].text, list[i].payload);
         }
+
+
         b.RowButton("Back to days", _nav!(_state with { Day = null }));
 
-        string click(int hour)
+        string click(StateValue state)
         {
             if (_depth == CalendarDepth.Hours)
             {
-                return _select!(new DateTime(_state.Year.Value, _state.Month.Value, _state.Day.Value, hour, 0, 0));
+                return _select!(state);
             }
 
-            return _nav!(_state with { Hour = hour });
+            return _nav!(state);
         }
     }
 
     private void BuildMinute(MessageBuilder b)
     {
-        for (int i = 0; i < 59; i++)
+        var list = new List<(string text, string payload)>();
+        for (int min = 0; min < 59; min++)
         {
-            var minute = i + 1;
+            var state = _state with { Minute = min };
+            var skip = _filterMinute?.Invoke(state) ?? false;
+            if(skip)
+            {
+                continue;
+            }
 
-            if (i % 8 == 0 && i != 0)
+            list.Add((_formatMinute?.Invoke(state) ?? min.ToString("00"), _select!(state)));
+        }
+
+        var preffer = PrefferToMinDiv(list.Count, 6);
+        for (int i = 0; i < list.Count; i++)
+        {
+            if(i % preffer == 0 && i != 0)
             {
                 b.MakeButtonRow();
             }
-
-            b.Button(_formatMinute?.Invoke(minute) ?? minute.ToString("00"), click(minute));
+            b.Button(list[i].text, list[i].payload);
         }
+
         b.RowButton("Back to hours", _nav!(_state with { Hour = null }));
 
-        string click(int minute)
+    }
+
+    private int PrefferToMinDiv(int size, int collums)
+    {
+        if(size < 2)
         {
-            return _select!(new DateTime(_state.Year.Value, _state.Month.Value, _state.Day.Value, _state.Hour.Value, minute, 0));
+            return collums;
         }
+
+        var variants = Enumerable.Range(collums - 5, 10)
+            .Where(c => c > 2)
+            .Select(c => (number: c, rate: size % c))
+            .OrderBy(c => c.rate)
+            .ThenBy(c => Math.Abs(c.number - collums)).ToArray();
+
+        if(variants.Any(c => c.rate == 0))
+        {
+            return variants.First().number;
+        }
+
+        return collums;
     }
 
     private struct StateValue
@@ -333,7 +441,12 @@ public class CalendarMessageBuilder
             Hour = null;
             Minute = null;
 
-            if (string.IsNullOrEmpty(state))
+            TryOverrideState(state);
+        }
+
+        public void TryOverrideState(string state)
+        {
+            if (string.IsNullOrEmpty(state) || state == ".")
             {
                 return;
             }
@@ -341,30 +454,35 @@ public class CalendarMessageBuilder
             if (state.Length < 4)
             {
                 YearPage = int.Parse(state);
+                Year = Month = Day = Hour = Minute = null;
                 return;
             }
             Year = int.Parse(state[0..4]);
 
             if (state.Length < 6)
             {
+                Month = Day = Hour = Minute = null;
                 return;
             }
             Month = int.Parse(state[4..6]);
 
             if (state.Length < 8)
             {
+                Day = Hour = Minute = null;
                 return;
             }
             Day = int.Parse(state[6..8]);
 
             if (state.Length < 10)
             {
+                Hour = Minute = null;
                 return;
             }
             Hour = int.Parse(state[8..10]);
 
             if (state.Length < 12)
             {
+                Minute = null;
                 return;
             }
             Minute = int.Parse(state[10..12]);
@@ -411,9 +529,59 @@ public class CalendarMessageBuilder
             return builder.ToString();
         }
 
+        public DateTime Date()
+        {
+            return new DateTime(
+                Year.GetValueOrDefault(1970),
+                Month.GetValueOrDefault(1),
+                Day.GetValueOrDefault(1),
+                Hour.GetValueOrDefault(),
+                Minute.GetValueOrDefault(),
+                0
+            );
+        }
+
+        public CalendarDepth Depth
+        {
+            get
+            {
+                if (Minute != null)
+                {
+                    return CalendarDepth.Minutes;
+                }
+
+                if(Hour != null)
+                {
+                    return CalendarDepth.Minutes;
+                }
+
+                if(Day != null)
+                {
+                    return CalendarDepth.Hours;
+                }
+
+                if (Month != null)
+                {
+                    return CalendarDepth.Days;
+                }
+
+                if (Year != null)
+                {
+                    return CalendarDepth.Months;
+                }
+
+                return CalendarDepth.Years;
+            }
+        }
+
         public static implicit operator string(StateValue state)
         {
             return state.ToString();
+        }
+
+        public static implicit operator DateTime(StateValue state)
+        {
+            return state.Date();
         }
     }
 }
