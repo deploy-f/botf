@@ -11,6 +11,8 @@ BotF have next features:
 * authentication and role-based authorization
 * statemachine for complicated dialogs with users
 * asp.net-like approach to develop bots
+* integrated DateTime picker
+* auto sending
 * good performance
 
 ## Documentaion
