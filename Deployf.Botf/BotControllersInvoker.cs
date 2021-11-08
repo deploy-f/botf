@@ -58,11 +58,15 @@ public class BotControllersInvoker
             method.Name,
             typedParams);
 
+        await controller.OnBeforeCall();
+
         var result = method.Invoke(controller, typedParams);
         if (result is Task task)
         {
             await task;
         }
+
+        await controller.OnAfterCall();
 
         return result;
     }

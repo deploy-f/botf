@@ -79,6 +79,11 @@ public class ScheduleService
         }
     }
 
+    public async ValueTask Add(Schedule slot)
+    {
+        _db.Insert(slot);
+    }
+
     public async ValueTask<IEnumerable<Schedule>> Add(long ownerId, CreateScheduleParams args)
     {
         var models = new List<Schedule>();
@@ -168,8 +173,13 @@ public class ScheduleService
 
     public async ValueTask<Paging<Schedule>> GetFreeSlots(long userId, DateTime day, PageFilter page)
     {
-        var query = _repo.Where(c => c.OwnerId == userId && c.From >= day && c.State == State.Free)
-            .AsQueryable();
+        var date = day.Date;
+        var tomorrow = date.AddDays(1);
+        var query = _repo.Where(c => c.OwnerId == userId
+            && c.From >= date
+            && c.From < tomorrow
+            && c.State == State.Free
+        ).AsQueryable();
         return _paging.Paging(query, page);
     }
 

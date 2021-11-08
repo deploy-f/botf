@@ -20,9 +20,29 @@ class Program : BotfProgram
     [Action]
     public async Task YearSelect(string state)
     {
-        PushL("Select year");
+        PushL("Pick the time");
 
-        DateTimePicker(state, Q(YearSelect, "{0}"), d => Q(DT, d.ToBinary().Base64()));
+        var now = DateTime.Now;
+        new CalendarMessageBuilder()
+            .Year(now.Year).Month(now.Month).Day(now.Day)
+            .Depth(CalendarDepth.Days)
+            .SetState(state)
+
+            .OnNavigatePath(s => Q(YearSelect, s))
+            .OnSelectPath(d => Q(DT, d.ToBinary().Base64()))
+
+            .SkipHour(d => d.Hour < 10 || d.Hour > 19)
+            .SkipDay(d => d.DayOfWeek == DayOfWeek.Sunday || d.DayOfWeek == DayOfWeek.Saturday)
+            .SkipMinute(d => (d.Minute % 15) != 0)
+            .SkipYear(y => y < DateTime.Now.Year)
+
+            .FormatMinute(d => $"{d:HH:mm}")
+            .FormatText((dt, depth, b) => {
+                b.PushL($"Select {depth}");
+                b.PushL($"Current state: {dt}");
+            })
+
+            .Build(Message, new PagingService());
 
         await SendOrUpdate();
     }
@@ -35,19 +55,6 @@ class Program : BotfProgram
         Push(datetime.ToString());
         await SendOrUpdate();
     }
-
-    private void DateTimePicker(string state, string nav, Func<DateTime, string> click)
-    {
-        new CalendarMessageBuilder()
-            .Year(DateTime.Now.Year)
-            .Month(DateTime.Now.Month)
-            .Depth(CalendarDepth.Minutes)
-            .SetState(state)
-            .OnNavigatePath(state => nav.Replace("{0}", state))
-            .OnSelectPath(click)
-            .Build(Message, pagingService);
-    }
-
 
     [On(Handle.Unknown)]
     public async Task Unknown()

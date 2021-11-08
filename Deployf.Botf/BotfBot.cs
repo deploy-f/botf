@@ -5,5 +5,10 @@ namespace Deployf.Botf;
 
 public class BotfBot : BotBase
 {
-    public BotfBot(BotfOptions options) : base(options.Username, new TelegramBotClient(options.Token)) { }
+    public readonly BotfOptions Options;
+
+    public BotfBot(BotfOptions options) : base(options.Username, new TelegramBotClient(options.Token))
+    {
+        Options = options;
+    }
 }

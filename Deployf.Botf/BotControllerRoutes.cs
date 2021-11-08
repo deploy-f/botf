@@ -16,23 +16,55 @@ public abstract class BotControllerMap<T> : Dictionary<T, MethodInfo> where T : 
     }
 }
 
-public class BotControllerRoutes : BotControllerMap<string>
+public abstract class BotControllerListMap<T> : List<(T command, MethodInfo action)> where T : notnull
 {
-    public BotControllerRoutes(IDictionary<string, MethodInfo> data) :base(data)
+    public BotControllerListMap(IList<(T, MethodInfo)> data) : base(data)
     {
     }
 
-    public (string? template, MethodInfo? method) FindTemplate(string controller, string action)
+    public IEnumerable<Type?> ControllerTypes()
+    {
+        return this
+            .Select(c => c.action.DeclaringType)
+            .Distinct();
+    }
+}
+
+public class BotControllerRoutes : BotControllerListMap<string>
+{
+    public BotControllerRoutes(IList<(string command, MethodInfo action)> data) :base(data)
+    {
+    }
+
+    public (string? template, MethodInfo? method) FindTemplate(string controller, string action, object[] args)
     {
         foreach(var item in this)
         {
-            if(item.Value.Name == action && item.Value.DeclaringType?.Name == controller)
+            if(item.action.Name == action
+                && item.action.DeclaringType!.Name == controller
+                && args.Length == item.action.GetParameters().Length) //TODO: check the argument types
             {
-                return (item.Key, item.Value);
+                return (item.command, item.action);
             }
         }
 
         return (null, null);
+    }
+
+    public bool TryGetValue(string key, string[] arguments, out MethodInfo method)
+    {
+        foreach (var item in this)
+        {
+            if (item.command == key
+                && arguments.Length == item.action.GetParameters().Length) //TODO: check the argument types
+            {
+                method = item.action;
+                return true;
+            }
+        }
+
+        method = null!;
+        return false;
     }
 }
 

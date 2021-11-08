@@ -29,39 +29,39 @@ class AdminController : BotControllerBase
         user.Roles = user.Roles | UserRole.admin; // just set new role with bitflag feature in c#
         _db.Update(user);
 
-        await Send($"You are admin now!");
+        Push($"You are admin now!");
     }
 
     // this command only for check, am i admin now or not.
     // Authorize attribute will do all work for ass
     [Action("/am_i_admin")]
     [Authorize("admin")]
-    public async Task AmIAdmin()
+    public void AmIAdmin()
     {
-        await Send($"You are admin");
+        Push($"You are admin");
     }
 
     [Action("/set_scheduler")]
     [Authorize("admin")]
-    public async Task SetScheduler()
+    public void SetScheduler()
     {
         State(new SetSchedulerState());
-        await Send($"Text me telegram user's username:");
+        Push($"Text me telegram user's username:");
     }
 
-    public record SetSchedulerState();
     [State]
-    public async Task HandleSchedulerState(SetSchedulerState _)
+    public void HandleSchedulerState(SetSchedulerState _)
     {
         var payload = Context!.GetSafeTextPayload();
         var user = _users.FirstOrDefault(c => c.Username == payload);
         if(user == null)
         {
-            await Send("User not found");
+            Push("User not found");
             return;
         }
         user.Roles = user.Roles | UserRole.scheduler;
         _db.Update(user);
-        await Send("User became an scheduler");
+        Push("User became an scheduler");
     }
+    public record SetSchedulerState();
 }
