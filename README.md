@@ -95,4 +95,4 @@ Other examples you can find in `/Examples` folder.
 
 ## Hosting
 
-After you develop your bot, you can deploy it to out hosting: [deploy-f.com](https://deploy-f.com)
+After you develop your bot, you can deploy it to our hosting: [deploy-f.com](https://deploy-f.com)
