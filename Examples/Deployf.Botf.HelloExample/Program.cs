@@ -10,20 +10,21 @@ class Program : BotfProgram
     // Action attribute mean that you mark async method `Start`
     // as handler for user's text in message which equal to '/start' string.
     // You can name method as you want
-    [Action("/start")]
-    public async Task Start()
+    // And also, second argument of Action's attribute is a description for telegram's menu for this action
+    [Action("/start", "start the bot")]
+    public void Start()
     {
         // Just sending a reply message to user. Very simple, isn't?
-        await Send($"Send `{nameof(Hello)}` to me, please!");
+        Push($"Send `{nameof(Hello)}` to me, please!");
     }
 
     // If we dont put any parameter into Action attribute,
     // it means that this method will handle messages with hame of the method.
     // Yep, in this case, you should care about the method's name.
     [Action]
-    public async Task Hello()
+    public void Hello()
     {
-        await Send("Hey! Thank you! That's it.");
+        Push("Hey! Thank you! That's it.");
     }
 
     // Here we handle all unknown command or just text sent from user
