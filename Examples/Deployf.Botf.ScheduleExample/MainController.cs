@@ -1,4 +1,5 @@
 ﻿using SQLite;
+using Telegram.Bot.Types.Enums;
 
 namespace Deployf.Botf.ScheduleExample;
 
@@ -25,28 +26,6 @@ class MainController : BotControllerBase
         PushL("This bot allow you and users to book the time slot");
         PushL();
         PushL($"Link to book your free slots: https://t.me/{_options.Username}?start={FromId.Base64()}");
-    }
-
-    [Action("/timezone", "set language and timezone")]
-    public void Timezone()
-    {
-        var user = _users.FirstOrDefault(c => c.Id == FromId);
-
-        Push($"Current time zone: {user.Timezone}");
-
-        Button("Russua", Q(SetTimezone, "ru"));
-        Button("Ukraine", Q(SetTimezone, "ua"));
-        Button("USA", Q(SetTimezone, "usa"));
-    }
-
-    [Action]
-    public void SetTimezone(string zone)
-    {
-        var user = _users.First(c => c.Id == FromId);
-        user.Timezone = zone;
-        _db.Update(user);
-
-        Push("Timezone changed");
     }
 
 
@@ -79,10 +58,17 @@ class MainController : BotControllerBase
 
     // handle all errors while message are processing
     [On(Handle.Exception)]
-    public void OnException(Exception e)
+    public async Task OnException(Exception e)
     {
         _logger.LogError(e, "Unhandled exception");
-        Push("Something went wrong");
+        if (Context.Update.Type == UpdateType.CallbackQuery)
+        {
+            await AnswerCallback("Error");
+        }
+        else if (Context.Update.Type == UpdateType.Message)
+        {
+            Push("Error");
+        }
     }
 
     // we'll handle auth error if user without roles try use action marked with [Authorize("policy")]

@@ -2,5 +2,6 @@
 **/obj
 **/appsettings.*.json
 .vs
+.vscode
 **/**.csproj.user
 **/db.sqlite

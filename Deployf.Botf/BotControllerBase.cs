@@ -11,9 +11,9 @@ public abstract class BotControllerBase
     public UserClaims User { get; set; } = new UserClaims();
     protected long ChatId { get; private set; }
     protected long FromId { get; private set; }
-    protected IUpdateContext? Context { get; private set; }
+    protected IUpdateContext Context { get; private set; } = null!;
     protected CancellationToken CancelToken { get; private set; }
-    protected ITelegramBotClient? Client { get; set; }
+    protected ITelegramBotClient Client { get; set; } = null!;
     protected MessageBuilder Message { get; set; } = new MessageBuilder();
     protected bool IsDirty
     {
@@ -48,13 +48,14 @@ public abstract class BotControllerBase
         await controller.OnAfterCall();
     }
 
-    public virtual async Task OnBeforeCall()
+    public virtual Task OnBeforeCall()
     {
+        return Task.CompletedTask;
     }
 
     public virtual async Task OnAfterCall()
     {
-        if (!(Context.Bot is BotfBot bot))
+        if (!(Context!.Bot is BotfBot bot))
         {
             return;
         }

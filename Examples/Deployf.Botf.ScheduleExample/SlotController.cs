@@ -1,10 +1,10 @@
 ﻿namespace Deployf.Botf.ScheduleExample;
 
-public class ScheduleController : BotControllerBase
+public class SlotController : BotControllerBase
 {
-    readonly ScheduleService service;
+    readonly SlotService service;
 
-    public ScheduleController(ScheduleService service)
+    public SlotController(SlotService service)
     {
         this.service = service;
     }
@@ -22,13 +22,86 @@ public class ScheduleController : BotControllerBase
     }
 
     [Action("/fill")]
-    public async Task FillCalendar()
+    public void FillCalendar()
     {
-        var from = DateTime.Now.Date.AddDays(1).AddHours(10);
-        var to = DateTime.Now.Date.AddDays(1).AddHours(19);
-        await service.Add(FromId, new CreateScheduleParams(from, to, 30));
+        FillCalendar0(".");
+    }
 
-        Push("Filled");
+    [Action("/fill")]
+    public void FillCalendar0(string s_start)
+    {
+        Push("Peek starts time for a slot");
+
+        var now = DateTime.Now;
+        new CalendarMessageBuilder()
+            .Year(now.Year).Month(now.Month).Day(now.Day)
+            .Depth(CalendarDepth.Time)
+            .SetState(s_start)
+
+            .OnNavigatePath(s => Q(FillCalendar0, s))
+            .OnSelectPath((d, s) => Q(FillCalendar1, s, "."))
+            .Build(Message);
+    }
+
+    [Action("/fill")]
+    public void FillCalendar1(string s_start, string s_end)
+    {
+        Push("Peek end time for a slot");
+
+        var now = DateTime.Now;
+        new CalendarMessageBuilder()
+            .Year(now.Year).Month(now.Month).Day(now.Day)
+            .Depth(CalendarDepth.Time)
+            .SkipTo(s_start)
+            .SetState(s_end)
+
+            .OnNavigatePath(s => Q(FillCalendar1, s_start, s))
+            .OnSelectPath((d, s) => Q(FillCalendar2, s_start, s, "."))
+            .Build(Message);
+    }
+
+    [Action("/fill")]
+    public void FillCalendar2(string s_start, string s_end, string s_upTo)
+    {
+        Push("Peek to day");
+
+        var now = DateTime.Now;
+        new CalendarMessageBuilder()
+            .Year(now.Year).Month(now.Month)
+            .Depth(CalendarDepth.Date)
+            .SkipTo(s_end)
+            .SetState(s_upTo)
+
+            .OnNavigatePath(s => Q(FillCalendar2, s_start, s_end, s))
+            .OnSelectPath((d, s) => Q(FillCalendar3, s_start, s_end, s, 0))
+            .Build(Message);
+    }
+
+    [Action("/fill")]
+    public void FillCalendar3(string s_start, string s_end, string s_upTo, int weekdays)
+    {
+        Push("Peek weekdays");
+
+        var state = (WeekDay)weekdays;
+
+        new FlagMessageBuilder<WeekDay>(state)
+            .Navigation(s => Q(FillCalendar3, s_start, s_end, s_upTo, (int)s))
+            .Build(Message);
+
+        RowButton("Fill", Q(Fill, s_start, s_end, s_upTo, weekdays));
+    }
+
+    [Action]
+    public async Task Fill(string s_start, string s_end, string s_upTo, int weekdays)
+    {
+        var start = new CalendarState(s_start).Date();
+        var end = new CalendarState(s_end).Date();
+        var upTo = new CalendarState(s_upTo).Date();
+
+        await service.AddSeries(new (FromId, DateTime.Now.Date, upTo, (WeekDay)weekdays, start, end));
+
+        PushL("✅ added");
+        await ListCalendarDays(FromId.Base64(), 0);
     }
 
     [Action("/add", "add the time free slot")]
@@ -68,7 +141,7 @@ public class ScheduleController : BotControllerBase
         var date = DateTime.FromBinary(dt64.Base64());
         var pager = await service.GetFreeSlots(uid64.Base64(), date, new PageFilter { Page = page });
         Pager(pager,
-            u => ($"{u.From:HH.mm} - {u.To:HH.mm}", Q(Booking, u.Id)),
+            u => ($"{u.From:HH.mm} - {u.To:HH.mm}", Q(SlotView, u.Id)),
             Q(ListFreeSchedules, uid64, dt64, "{0}"),
             3
         );
@@ -76,7 +149,7 @@ public class ScheduleController : BotControllerBase
     }
 
     [Action]
-    public void Booking(int scheduleId)
+    public void SlotView(int scheduleId)
     {
         var schedule = service.Get(scheduleId);
 
@@ -178,7 +251,7 @@ public class ScheduleController : BotControllerBase
 
         PushL("Slot has been added");
 
-        Booking(schedule.Id);
+        SlotView(schedule.Id);
     }
 
     [Action("/list_all")]

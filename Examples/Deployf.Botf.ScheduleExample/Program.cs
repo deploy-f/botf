@@ -25,6 +25,6 @@ BotfProgram.StartBot(args, onConfigure: (svc, cfg) =>
     svc.AddSingleton(db.Table<User>());
     svc.AddSingleton(db.Table<Schedule>());
     svc.AddSingleton(db);
-    svc.AddTransient<ScheduleService>();
+    svc.AddTransient<SlotService>();
     svc.AddSingleton<IBotUserService, UserService>();
 });

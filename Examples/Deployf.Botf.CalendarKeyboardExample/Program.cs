@@ -1,14 +1,18 @@
 using Deployf.Botf;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using Telegram.Bot.Types.Enums;
 
 class Program : BotfProgram
 {
     public static void Main(string[] args) => StartBot(args);
 
     readonly PagingService pagingService;
-    public Program(PagingService pagingService)
+    readonly ILogger<Program> logger;
+    public Program(PagingService pagingService, ILogger<Program> logger)
     {
         this.pagingService = pagingService;
+        this.logger = logger;
     }
 
     [Action("/start")]
@@ -66,6 +70,15 @@ class Program : BotfProgram
     [On(Handle.Exception)]
     public async Task Ex(Exception e)
     {
-        Debugger.Break();
+        logger.LogCritical(e, "Unhandled exception");
+
+        if (Context.Update.Type == UpdateType.CallbackQuery)
+        {
+            await AnswerCallback("Error");
+        }
+        else if(Context.Update.Type == UpdateType.Message)
+        {
+            Push("Error");
+        }
     }
 }

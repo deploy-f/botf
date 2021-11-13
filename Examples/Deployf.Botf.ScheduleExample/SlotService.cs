@@ -10,9 +10,27 @@ public class ScheduleFilter : PageFilter
     public DateTime? To { get; set; }
 }
 
-public record CreateScheduleParams(DateTime From, DateTime To, int SlotLength);
+public enum WeekDay
+{
+    Sunday = 1,
+    Monday = 1 << 1,
+    Tuesday = 1 << 2,
+    Wednesday = 1 << 3,
+    Thursday = 1 << 4,
+    Friday = 1 << 5,
+    Saturday = 1 << 6,
+}
 
-public class ScheduleService
+public record CreateSeriesParams(
+    long OwnerId,
+    DateTime SeriesFrom,
+    DateTime SeriesTo,
+    WeekDay WeekDays,
+    DateTime Start,
+    DateTime To
+);
+
+public class SlotService
 {
     readonly TableQuery<Schedule> _repo;
     readonly TableQuery<User> _users;
@@ -20,7 +38,7 @@ public class ScheduleService
     readonly PagingService _paging;
     readonly MessageSender _sender;
 
-    public ScheduleService(TableQuery<Schedule> repo, SQLiteConnection db, PagingService paging, MessageSender sender, TableQuery<User> users)
+    public SlotService(TableQuery<Schedule> repo, SQLiteConnection db, PagingService paging, MessageSender sender, TableQuery<User> users)
     {
         _repo = repo;
         _db = db;
@@ -84,24 +102,30 @@ public class ScheduleService
         _db.Insert(slot);
     }
 
-    public async ValueTask<IEnumerable<Schedule>> Add(long ownerId, CreateScheduleParams args)
+    public async ValueTask AddSeries(CreateSeriesParams param)
     {
-        var models = new List<Schedule>();
-
-        for(var start = args.From; start <= args.To; start = start.AddMinutes(args.SlotLength))
+        for(var day = param.SeriesFrom; day <= param.SeriesTo; day = day.AddDays(1))
         {
-            models.Add(new Schedule
+            var date = day.Date;
+            var from = date.AddHours(param.Start.Hour).AddMinutes(param.Start.Minute);
+            var to = date.AddHours(param.To.Hour).AddMinutes(param.To.Minute);
+
+            var weekday = Enum.Parse<WeekDay>(day.DayOfWeek.ToString());
+
+            if(!param.WeekDays.HasFlag(weekday))
             {
-                From = start,
-                To = start.AddMinutes(args.SlotLength),
-                OwnerId = ownerId,
-                State = State.Free
-            });
+                continue;
+            }
+
+            var slot = new Schedule
+            {
+                OwnerId = param.OwnerId,
+                State = State.Free,
+                From = from,
+                To = to
+            };
+            await Add(slot);
         }
-
-        _db.InsertAll(models);
-
-        return models;
     }
 
     public async ValueTask<Schedule> Book(int scheduleId)
