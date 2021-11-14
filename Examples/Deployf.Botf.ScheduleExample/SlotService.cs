@@ -195,6 +195,15 @@ public class SlotService
         return model;
     }
 
+
+    public async ValueTask<Schedule> Free(int scheduleId)
+    {
+        var model = _repo.First(c => c.Id == scheduleId);
+        model.State = State.Free;
+        _db.Update(model);
+        return model;
+    }
+
     public async ValueTask<Paging<Schedule>> GetFreeSlots(long userId, DateTime day, PageFilter page)
     {
         var date = day.Date;

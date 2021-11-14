@@ -15,6 +15,7 @@ public abstract class BotControllerBase
     protected CancellationToken CancelToken { get; private set; }
     protected ITelegramBotClient Client { get; set; } = null!;
     protected MessageBuilder Message { get; set; } = new MessageBuilder();
+    protected IKeyValueStorage? Store { get; set; }
     protected bool IsDirty
     {
         get => Message.IsDirty;
@@ -28,6 +29,10 @@ public abstract class BotControllerBase
         ChatId = Context.GetSafeChatId().GetValueOrDefault();
         FromId = Context.GetSafeUserId().GetValueOrDefault();
         Client = Context.Bot.Client;
+        if(Context.Items.TryGetValue("store", out var store))
+        {
+            Store = store as IKeyValueStorage; // todo: move outside
+        }
         Message = new MessageBuilder();
     }
 
@@ -43,6 +48,7 @@ public abstract class BotControllerBase
         controller.Init(Context, CancelToken);
         controller.User = User;
         controller.Message = Message;
+        controller.Store = Store;
         await controller.OnBeforeCall();
         await method(controller);
         await controller.OnAfterCall();

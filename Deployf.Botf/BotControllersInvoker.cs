@@ -49,6 +49,7 @@ public class BotControllersInvoker
         var typedParams = param.Select((p, i) => (object)(p.ParameterType.Name switch
         {
             nameof(Int32) => int.Parse(args[i].ToString()),
+            nameof(Int64) => long.Parse(args[i].ToString()),
             nameof(Single) => float.Parse(args[i].ToString()),
             _ => MapDefault(p.ParameterType, args[i]),
         })).ToArray();

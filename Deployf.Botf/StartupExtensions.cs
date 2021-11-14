@@ -72,6 +72,7 @@ public static class StartupExtensions
         services.AddSingleton(handlers);
         services.AddSingleton<PagingService>();
         services.AddSingleton<IChatFSM, ChatFSM>();
+        services.AddSingleton<IUserKVStorage, UserKVStorage>();
         services.AddScoped<BotControllersMiddleware>();
         services.AddScoped<BotControllersFSMMiddleware>();
         services.AddScoped<BotControllersAuthMiddleware>();

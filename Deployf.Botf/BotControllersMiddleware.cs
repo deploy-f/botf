@@ -7,17 +7,32 @@ public class BotControllersMiddleware : IUpdateHandler
     readonly ILogger<BotControllersMiddleware> _log;
     readonly BotControllerRoutes _map;
     readonly IBotContextAccessor _accessor;
+    readonly IUserKVStorage _storage;
 
-    public BotControllersMiddleware(BotControllerRoutes map, IBotContextAccessor accessor, ILogger<BotControllersMiddleware> log)
+    public BotControllersMiddleware(BotControllerRoutes map, IBotContextAccessor accessor, ILogger<BotControllersMiddleware> log, IUserKVStorage storage)
     {
         _map = map;
         _accessor = accessor;
         _log = log;
+        _storage = storage;
     }
 
     public async Task HandleAsync(IUpdateContext context, UpdateDelegate next, CancellationToken cancellationToken)
     {
         _accessor.Context = context;
+
+        var uid = context.GetSafeUserId();
+        if (uid != null)
+        {
+            if (!_storage.TryGetValue(uid.Value, out var store))
+            {
+                store = new KeyValueStorage();
+                _storage[uid.Value] = store;
+            }
+
+            context.Items["store"] = store;
+        }
+
         var payload = context.GetSafeTextPayload();
         if (payload != null)
         {

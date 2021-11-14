@@ -21,14 +21,65 @@ public class SlotController : BotControllerBase
         await ListCalendarDays(FromId.Base64(), 0);
     }
 
-    [Action("/fill")]
-    public void FillCalendar()
+
+    public struct FillState
     {
-        FillCalendar0(".");
+        public DateTime? Start { get; set; }
+        public DateTime? End { get; set; }
+        public DateTime? UpTo { get; set; }
+        public WeekDay? WeekDays { get; set; }
+        public string? Comment { get; set; }
+
+        public bool IsSet => Start.HasValue
+            && End.HasValue
+            && UpTo.HasValue
+            && WeekDays.HasValue
+            && !string.IsNullOrEmpty(Comment);
     }
 
-    [Action("/fill")]
-    public void FillCalendar0(string s_start)
+    private FillState GetFillState() => Store!.Get<FillState>("fill", new FillState());
+    private void SetFillState(FillState state) => Store!["fill"] = state;
+    private string WeekdaysString(WeekDay weekDay)
+    {
+        var values = Enum.GetValues<WeekDay>();
+        var result = string.Empty;
+        if(weekDay == 0)
+        {
+            return "not set";
+        }
+
+        for (int i = 0; i < values.Length; i++)
+        {
+            if((weekDay & values[i]) == values[i])
+            {
+                result += values[i].ToString()[0..2] + " ";
+            }
+        }
+
+        return result;
+    }
+
+    [Action("/fill", "add a serries slots")]
+    public void FillCalendar()
+    {
+        var state = GetFillState();
+
+        PushL("Fill periodically time slot");
+
+        RowButton(state.Start.HasValue ? $"From {state.Start:HH:mm}" : "Set start time", Q(Fill_LoopStart, "."));
+        RowButton(state.End.HasValue ? $"To {state.End:HH:mm}" : "Set finish time", Q(Fill_LoopFinish, "."));
+        RowButton(state.UpTo.HasValue ? $"Series up to {state.UpTo:MM.dd}" : "Set series end date", Q(Fill_LoopUpTo, "."));
+        RowButton(state.WeekDays.HasValue ? $"Repeating {WeekdaysString(state.WeekDays.Value)}" : "Set repeating", Q(Fill_LoopWeekDays, 0));
+        RowButton(string.IsNullOrEmpty(state.Comment) ? "Set or update comment" : "Comment: " + state.Comment, Q(Fill_Comment));
+
+        if (state.IsSet)
+        {
+            RowButton("Schedule", Q(Fill));
+        }
+    }
+
+    [Action]
+    public void Fill_LoopStart(string state)
     {
         Push("Peek starts time for a slot");
 
@@ -36,32 +87,52 @@ public class SlotController : BotControllerBase
         new CalendarMessageBuilder()
             .Year(now.Year).Month(now.Month).Day(now.Day)
             .Depth(CalendarDepth.Time)
-            .SetState(s_start)
+            .SetState(state)
 
-            .OnNavigatePath(s => Q(FillCalendar0, s))
-            .OnSelectPath((d, s) => Q(FillCalendar1, s, "."))
+            .OnNavigatePath(s => Q(Fill_LoopStart, s))
+            .OnSelectPath((d, s) => Q(Fill_SetStart, d.ToBinary()))
             .Build(Message);
     }
 
-    [Action("/fill")]
-    public void FillCalendar1(string s_start, string s_end)
+    [Action]
+    public void Fill_SetStart(long state)
     {
-        Push("Peek end time for a slot");
+        var fillState = GetFillState();
+        SetFillState(fillState with { Start = DateTime.FromBinary(state) });
+        FillCalendar();
+    }
+
+
+    [Action]
+    public void Fill_LoopFinish(string state)
+    {
+        Push("Peek finish time for a slot");
+        var fillState = GetFillState();
 
         var now = DateTime.Now;
         new CalendarMessageBuilder()
             .Year(now.Year).Month(now.Month).Day(now.Day)
             .Depth(CalendarDepth.Time)
-            .SkipTo(s_start)
-            .SetState(s_end)
+            .SkipTo(fillState.Start.GetValueOrDefault(DateTime.Now))
+            .SetState(state)
 
-            .OnNavigatePath(s => Q(FillCalendar1, s_start, s))
-            .OnSelectPath((d, s) => Q(FillCalendar2, s_start, s, "."))
+            .OnNavigatePath(s => Q(Fill_LoopFinish, s))
+            .OnSelectPath((d, s) => Q(Fill_SetFinish, s))
             .Build(Message);
     }
 
-    [Action("/fill")]
-    public void FillCalendar2(string s_start, string s_end, string s_upTo)
+    [Action]
+    public void Fill_SetFinish(string state)
+    {
+        var fillState = GetFillState();
+        SetFillState(fillState with { End = new CalendarState(state).Date() });
+        FillCalendar();
+    }
+
+
+
+    [Action]
+    public void Fill_LoopUpTo(string state)
     {
         Push("Peek to day");
 
@@ -69,36 +140,75 @@ public class SlotController : BotControllerBase
         new CalendarMessageBuilder()
             .Year(now.Year).Month(now.Month)
             .Depth(CalendarDepth.Date)
-            .SkipTo(s_end)
-            .SetState(s_upTo)
+            .SkipTo(now)
+            .SetState(state)
 
-            .OnNavigatePath(s => Q(FillCalendar2, s_start, s_end, s))
-            .OnSelectPath((d, s) => Q(FillCalendar3, s_start, s_end, s, 0))
+            .OnNavigatePath(s => Q(Fill_LoopUpTo, s))
+            .OnSelectPath((d, s) => Q(Fill_SetUpTo, s))
             .Build(Message);
-    }
-
-    [Action("/fill")]
-    public void FillCalendar3(string s_start, string s_end, string s_upTo, int weekdays)
-    {
-        Push("Peek weekdays");
-
-        var state = (WeekDay)weekdays;
-
-        new FlagMessageBuilder<WeekDay>(state)
-            .Navigation(s => Q(FillCalendar3, s_start, s_end, s_upTo, (int)s))
-            .Build(Message);
-
-        RowButton("Fill", Q(Fill, s_start, s_end, s_upTo, weekdays));
     }
 
     [Action]
-    public async Task Fill(string s_start, string s_end, string s_upTo, int weekdays)
+    public void Fill_SetUpTo(string state)
     {
-        var start = new CalendarState(s_start).Date();
-        var end = new CalendarState(s_end).Date();
-        var upTo = new CalendarState(s_upTo).Date();
+        var fillState = GetFillState();
+        SetFillState(fillState with { UpTo = new CalendarState(state).Date() });
+        FillCalendar();
+    }
 
-        await service.AddSeries(new (FromId, DateTime.Now.Date, upTo, (WeekDay)weekdays, start, end));
+
+    [Action]
+    public void Fill_LoopWeekDays(int state)
+    {
+         Push("Peek weekdays");
+
+        var weekdays = (WeekDay)state;
+
+        new FlagMessageBuilder<WeekDay>(weekdays)
+            .Navigation(s => Q(Fill_LoopWeekDays, (int)s))
+            .Build(Message);
+
+        RowButton("Done", Q(Fill_SetWeekDays, state));
+    }
+
+    [Action]
+    public void Fill_SetWeekDays(int state)
+    {
+        var fillState = GetFillState();
+        SetFillState(fillState with { WeekDays = (WeekDay)state });
+        FillCalendar();
+    }
+
+    [Action]
+    public void Fill_Comment()
+    {
+        State(new SetCommentState());
+        Push("Send a comment");
+    }
+
+    [State]
+    public void Fill_StateComment(SetCommentState state)
+    {
+        var fillState = GetFillState();
+        SetFillState(fillState with { Comment = Context.GetSafeTextPayload() });
+        FillCalendar();
+    }
+    public record SetCommentState;
+
+
+
+    [Action]
+    public async Task Fill()
+    {
+        var fillState = GetFillState();
+
+        await service.AddSeries(new(FromId,
+            DateTime.Now.Date,
+            fillState.UpTo!.Value,
+            fillState.WeekDays!.Value,
+            fillState.Start!.Value,
+            fillState.End!.Value));
+
 
         PushL("✅ added");
         await ListCalendarDays(FromId.Base64(), 0);
@@ -153,13 +263,33 @@ public class SlotController : BotControllerBase
     {
         var schedule = service.Get(scheduleId);
 
-        PushL("You are trying to book slot");
+        PushL($"{schedule.State} time slot");
 
-        PushL($"From: {schedule.From}");
-        PushL($"To: {schedule.To}");
+        PushL($"Date: {schedule.From:dd.MM.yyyy}");
+        PushL($"Time: {schedule.From:HH:mm} - {schedule.To:HH:mm}");
+        if(!string.IsNullOrEmpty(schedule.Comment))
+        {
+            PushL();
+            Push(schedule.Comment);
+        }
 
-        Button("Book", Q(Book, scheduleId));
-        Button("🔙 Go to list", Q(ListFreeSchedules, schedule.OwnerId.Base64(), schedule.From.Date.ToBinary().Base64(), 0));
+        if(FromId == schedule.OwnerId)
+        {
+            if (schedule.State != global::State.Canceled)
+            {
+                RowButton("Cancel", Q(Cancel, scheduleId));
+            }
+            if (schedule.State == global::State.Canceled)
+            {
+                RowButton("Free", Q(Free, scheduleId));
+            }
+        }
+        else
+        {
+            RowButton("Book", Q(Book, scheduleId));
+        }
+
+        RowButton("🔙 Back", Q(ListFreeSchedules, schedule.OwnerId.Base64(), schedule.From.Date.ToBinary().Base64(), 0));
     }
 
     [Action]
@@ -167,8 +297,23 @@ public class SlotController : BotControllerBase
     {
         await service.Book(scheduleId);
         PushL("Booked");
-        RowButton("🔙 Go to menu", Q(ListSchedulersPage, 0));
+        SlotView(scheduleId);
+    }
 
+    [Action]
+    public async Task Cancel(int scheduleId)
+    {
+        await service.Cancel(scheduleId);
+        PushL("Canceled");
+        SlotView(scheduleId);
+    }
+
+    [Action]
+    public async Task Free(int scheduleId)
+    {
+        await service.Free(scheduleId);
+        PushL("Now it is free");
+        SlotView(scheduleId);
     }
 
     [Action]
