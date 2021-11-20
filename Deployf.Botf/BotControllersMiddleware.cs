@@ -51,12 +51,12 @@ public class BotControllersMiddleware : IUpdateHandler
             if (_map.TryGetValue(key, arguments, out var value) && value != null)
             {
                 _log.LogDebug("Found bot action {Controller}.{Method}. Payload: {Payload} Arguments: {@Args}",
-                    value.DeclaringType.Name,
+                    value.DeclaringType!.Name,
                     value.Name,
                     payload,
                     arguments);
 
-                var controller = (BotControllerBase)context.Services.GetService(value.DeclaringType);
+                var controller = (BotControllerBase)context.Services.GetRequiredService(value.DeclaringType);
                 controller.Init(context, cancellationToken);
                 context.Items["args"] = arguments;
                 context.Items["action"] = value;

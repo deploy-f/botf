@@ -13,9 +13,10 @@ public class BotControllerFactory
     public static BotControllerRoutes MakeRoutes()
     {
         var keys = _controllers
-            .Select(c => c.GetMethods()
-                .Select(c => (templ: GetTemplate(c), m: c))
-                .Where(c => c.templ != null))
+            .Select(c => c.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                .Select(s => (templ: GetTemplate(s), m: s))
+                .Where(s => s.templ != null)
+                .Select(s => (templ: s.templ!, m: s.m)))
 
             .SelectMany(c => c)
             .ToList();
@@ -37,7 +38,7 @@ public class BotControllerFactory
     public static BotControllerStates MakeStates()
     {
         var keys = _controllers
-            .Select(c => c.GetMethods()
+            .Select(c => c.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                 .Where(c => c.GetParameters().Length == 1)
                 .Where(c => c.GetCustomAttribute<StateAttribute>() != null)
                 .Select(c => (type: c.GetParameters()[0].ParameterType, m: c)))
@@ -52,9 +53,9 @@ public class BotControllerFactory
     public static BotControllerHandlers MakeHandlers()
     {
         var keys = _controllers
-            .Select(c => c.GetMethods()
+            .Select(c => c.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                 .Where(c => c.GetCustomAttribute<OnAttribute>() != null)
-                .Select(c => (type: c.GetCustomAttribute<OnAttribute>().Handler, m: c)))
+                .Select(c => (type: c.GetCustomAttribute<OnAttribute>()!.Handler, m: c)))
 
             .SelectMany(c => c)
 

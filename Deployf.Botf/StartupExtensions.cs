@@ -120,7 +120,7 @@ public static class StartupExtensions
             .ContinueWith(t =>
             {
                 LogException(t.Exception, "Bot long pooling task error");
-                throw t.Exception;
+                throw t.Exception ?? new Exception();
             }, TaskContinuationOptions.OnlyOnFaulted);
 
         return app;
@@ -147,7 +147,7 @@ public static class StartupExtensions
             }
         }
 
-        void LogException(Exception e, string message)
+        void LogException(Exception? e, string message)
         {
             app.ApplicationServices.GetRequiredService<ILogger<BotfBot>>().LogCritical(default, e, message);
         }

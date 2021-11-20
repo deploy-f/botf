@@ -7,7 +7,7 @@ public class BotfOptions
     public string? WebhookUrl { get; set; }
     public bool AutoSend { get; set; }
     public bool UseWebhooks => !string.IsNullOrEmpty(WebhookUrl);
-    public string WebhookPath
+    public string? WebhookPath
     {
         get
         {

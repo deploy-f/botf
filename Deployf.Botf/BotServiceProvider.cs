@@ -20,7 +20,7 @@ internal class BotServiceProvider : IBotServiceProvider
     public object? GetService(Type serviceType) =>
         _scope != null
             ? _scope.ServiceProvider.GetService(serviceType)
-            : _container.GetService(serviceType)
+            : _container?.GetService(serviceType)
     ;
 
     public IBotServiceProvider CreateScope() =>

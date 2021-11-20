@@ -17,7 +17,7 @@ public static class BotRoutesExtensions
             return methodAuth.Policy ?? string.Empty;
         }
 
-        var classAuth = method.DeclaringType.GetCustomAttribute<AuthorizeAttribute>();
+        var classAuth = method.DeclaringType!.GetCustomAttribute<AuthorizeAttribute>();
         if (classAuth != null)
         {
             return classAuth.Policy ?? string.Empty;

@@ -16,7 +16,7 @@ public class BotControllersInvoker
 
     public async Task Invoke(IUpdateContext ctx, CancellationToken token, MethodInfo method, params object[] args)
     {
-        var controller = (BotControllerBase?)_services.GetService(method.DeclaringType!);
+        var controller = (BotControllerBase)_services.GetRequiredService(method.DeclaringType!);
         controller.Init(ctx, token);
         await InvokeInternal(controller, method, args);
     }
@@ -29,7 +29,7 @@ public class BotControllersInvoker
             return false;
         }
 
-        var controller = value as BotControllerBase;
+        var controller = (BotControllerBase)value!;
 
         var method = (MethodInfo)context.Items["action"];
         var args = (object[])context.Items["args"];
@@ -38,7 +38,7 @@ public class BotControllersInvoker
         return true;
     }
 
-    private async Task<object?> InvokeInternal(BotControllerBase? controller, MethodInfo method, object[] args)
+    private async Task<object?> InvokeInternal(BotControllerBase controller, MethodInfo method, object[] args)
     {
         var param = method.GetParameters();
         if (args.Length != param.Length)
@@ -46,16 +46,19 @@ public class BotControllersInvoker
             throw new IndexOutOfRangeException();
         }
 
+        // TODO: make parameter binder
         var typedParams = param.Select((p, i) => (object)(p.ParameterType.Name switch
         {
+#pragma warning disable CS8604 // Possible null reference argument.
             nameof(Int32) => int.Parse(args[i].ToString()),
             nameof(Int64) => long.Parse(args[i].ToString()),
             nameof(Single) => float.Parse(args[i].ToString()),
+#pragma warning restore CS8604 // Possible null reference argument.
             _ => MapDefault(p.ParameterType, args[i]),
         })).ToArray();
 
         _log.LogDebug("Begin execute action {Controller}.{Method}. Arguments: {@Args}",
-            method.DeclaringType.Name,
+            method.DeclaringType!.Name,
             method.Name,
             typedParams);
 

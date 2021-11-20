@@ -72,6 +72,14 @@ public class MessageBuilder
         return this;
     }
 
+    public MessageBuilder LineButton(string text, string payload)
+    {
+        MakeButtonRow();
+        Button(text, payload);
+        MakeButtonRow();
+        return this;
+    }
+
     public MessageBuilder RowButton(InlineKeyboardButton button)
     {
         MakeButtonRow();

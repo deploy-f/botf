@@ -71,7 +71,7 @@ public class BotControllersAuthMiddleware : IUpdateHandler
 
         var claim = new UserClaims()
         {
-            Roles = roles,
+            Roles = roles ?? new string[0],
             IsAuthorized = true,
             Id = userId
         };

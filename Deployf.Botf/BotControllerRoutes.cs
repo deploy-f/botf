@@ -8,10 +8,10 @@ public abstract class BotControllerMap<T> : Dictionary<T, MethodInfo> where T : 
     {
     }
 
-    public IEnumerable<Type?> ControllerTypes()
+    public IEnumerable<Type> ControllerTypes()
     {
         return Values
-            .Select(c => c.DeclaringType)
+            .Select(c => c.DeclaringType!)
             .Distinct();
     }
 }
@@ -22,10 +22,10 @@ public abstract class BotControllerListMap<T> : List<(T command, MethodInfo acti
     {
     }
 
-    public IEnumerable<Type?> ControllerTypes()
+    public IEnumerable<Type> ControllerTypes()
     {
         return this
-            .Select(c => c.action.DeclaringType)
+            .Select(c => c.action.DeclaringType!)
             .Distinct();
     }
 }

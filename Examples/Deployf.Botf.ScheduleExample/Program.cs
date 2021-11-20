@@ -1,20 +1,6 @@
 using Deployf.Botf;
 using SQLite;
 
-// arrange
-// schedule
-// approve or reject
-// search for meets and edit it
-
-//      /|  ---
-//    -- | |   |
-//   |   | | --
-//    -- | |   |
-//   |   | | --
-//    ---  |/
-//
-
-
 BotfProgram.StartBot(args, onConfigure: (svc, cfg) =>
 {
     var db = new SQLiteConnection("db.sqlite");

@@ -17,7 +17,7 @@ public class BotControllersFSMMiddleware : IUpdateHandler
 
     public async Task HandleAsync(IUpdateContext context, UpdateDelegate next, CancellationToken cancellationToken)
     {
-        Action afterNext = null;
+        Action? afterNext = null;
 
         if (!context.Items.ContainsKey("controller"))
         {
@@ -31,11 +31,11 @@ public class BotControllersFSMMiddleware : IUpdateHandler
             if (state != null && _map.TryGetValue(state.GetType(), out var value) && value != null)
             {
                 _log.LogDebug("Found bot state handler {Controller}.{Method}, State: {State}",
-                    value.DeclaringType.Name,
+                    value.DeclaringType!.Name,
                     value.Name,
                     state);
 
-                var controller = (BotControllerBase)context.Services.GetService(value.DeclaringType);
+                var controller = (BotControllerBase)context.Services.GetRequiredService(value.DeclaringType);
                 controller.Init(context, cancellationToken);
                 context.Items["args"] = new object[] { state };
                 context.Items["action"] = value;

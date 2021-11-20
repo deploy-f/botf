@@ -1,35 +1,6 @@
 ﻿using Deployf.Botf;
 using SQLite;
 
-public class ScheduleFilter : PageFilter
-{
-    public State? State { get; set; }
-    public int? OwnerId { get; set; }
-    public int? UserId { get; set; }
-    public DateTime? From { get; set; }
-    public DateTime? To { get; set; }
-}
-
-public enum WeekDay
-{
-    Sunday = 1,
-    Monday = 1 << 1,
-    Tuesday = 1 << 2,
-    Wednesday = 1 << 3,
-    Thursday = 1 << 4,
-    Friday = 1 << 5,
-    Saturday = 1 << 6,
-}
-
-public record CreateSeriesParams(
-    long OwnerId,
-    DateTime SeriesFrom,
-    DateTime SeriesTo,
-    WeekDay WeekDays,
-    DateTime Start,
-    DateTime To
-);
-
 public class SlotService
 {
     readonly TableQuery<Schedule> _repo;
@@ -179,9 +150,25 @@ public class SlotService
         return model;
     }
 
+    public async ValueTask CancelDay(long ownerId, DateTime date)
+    {
+        var day = date.Date;
+        var nextDay = day.AddDays(1);
+        var slots = _repo.Where(c => c.OwnerId == ownerId && c.From >= day && c.From <= nextDay);
+        foreach (var slot in slots)
+        {
+            await Cancel(slot);
+        }
+    }
+
     public async ValueTask<Schedule> Cancel(int scheduleId)
     {
         var model = _repo.First(c => c.Id == scheduleId);
+        return await Cancel(model);
+    }
+
+    private async ValueTask<Schedule> Cancel(Schedule model)
+    {
         model.State = State.Canceled;
         _db.Update(model);
 
@@ -194,7 +181,6 @@ public class SlotService
         }
         return model;
     }
-
 
     public async ValueTask<Schedule> Free(int scheduleId)
     {
@@ -231,3 +217,33 @@ public class SlotService
         return _paging.Paging(query, filer);
     }
 }
+
+
+public class ScheduleFilter : PageFilter
+{
+    public State? State { get; set; }
+    public int? OwnerId { get; set; }
+    public int? UserId { get; set; }
+    public DateTime? From { get; set; }
+    public DateTime? To { get; set; }
+}
+
+public enum WeekDay
+{
+    Sunday = 1,
+    Monday = 1 << 1,
+    Tuesday = 1 << 2,
+    Wednesday = 1 << 3,
+    Thursday = 1 << 4,
+    Friday = 1 << 5,
+    Saturday = 1 << 6,
+}
+
+public record CreateSeriesParams(
+    long OwnerId,
+    DateTime SeriesFrom,
+    DateTime SeriesTo,
+    WeekDay WeekDays,
+    DateTime Start,
+    DateTime To
+);

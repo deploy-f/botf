@@ -21,7 +21,7 @@ public class CustomUpdatePollingManager<TBot> : IUpdatePollingManager<TBot> wher
       GetUpdatesRequest? requestParams = null,
       CancellationToken cancellationToken = default)
     {
-        var bot = (TBot)_rootProvider.GetService(typeof(TBot));
+        var bot = (TBot)_rootProvider.GetRequiredService(typeof(TBot));
         await bot.Client.DeleteWebhookAsync(false, cancellationToken);
 
         var getUpdatesRequest = requestParams ?? new GetUpdatesRequest
