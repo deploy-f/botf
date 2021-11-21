@@ -71,8 +71,7 @@ public static class StartupExtensions
         services.AddSingleton(states);
         services.AddSingleton(handlers);
         services.AddSingleton<PagingService>();
-        services.AddSingleton<IChatFSM, ChatFSM>();
-        services.AddSingleton<IUserKVStorage, UserKVStorage>();
+        services.AddSingleton<IKeyValueStorage, InMemoryKeyValueStorage>();
         services.AddScoped<BotControllersMiddleware>();
         services.AddScoped<BotControllersFSMMiddleware>();
         services.AddScoped<BotControllersAuthMiddleware>();
@@ -88,6 +87,15 @@ public static class StartupExtensions
         services.AddTransient<HttpClient>();
         services.AddTransient(ctx => ctx.GetRequiredService<BotfBot>().Client);
         services.AddTransient<MessageSender>();
+
+        services.AddSingleton<IArgumentBind, ArgumentBindInt32>();
+        services.AddSingleton<IArgumentBind, ArgumentBindInt64>();
+        services.AddSingleton<IArgumentBind, ArgumentBindSingle>();
+        services.AddSingleton<IArgumentBind, ArgumentBindString>();
+        services.AddSingleton<IArgumentBind, ArgumentBindDateTime>();
+        services.AddSingleton<IArgumentBind, ArgumentBindEnum>();
+        services.AddSingleton<IArgumentBind, ArgumentAttributeBindState>();
+        services.AddSingleton<ArgumentBinder>();
 
         return services;
     }

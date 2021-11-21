@@ -7,21 +7,23 @@ public class BotControllersInvoker
 {
     readonly ILogger<BotControllersInvoker> _log;
     readonly IServiceProvider _services;
+    readonly ArgumentBinder _binder;
 
-    public BotControllersInvoker(ILogger<BotControllersInvoker> log, IServiceProvider services)
+    public BotControllersInvoker(ILogger<BotControllersInvoker> log, IServiceProvider services, ArgumentBinder binder)
     {
         _log = log;
         _services = services;
+        _binder = binder;
     }
 
-    public async Task Invoke(IUpdateContext ctx, CancellationToken token, MethodInfo method, params object[] args)
+    public async ValueTask Invoke(IUpdateContext ctx, CancellationToken token, MethodInfo method, params object[] args)
     {
         var controller = (BotControllerBase)_services.GetRequiredService(method.DeclaringType!);
         controller.Init(ctx, token);
-        await InvokeInternal(controller, method, args);
+        await InvokeInternal(controller, method, args, ctx);
     }
 
-    public async Task<bool> Invoke(IUpdateContext context)
+    public async ValueTask<bool> Invoke(IUpdateContext context)
     {
         var isPresented = context.Items.TryGetValue("controller", out var value) && value is BotControllerBase;
         if (!isPresented)
@@ -33,29 +35,14 @@ public class BotControllersInvoker
 
         var method = (MethodInfo)context.Items["action"];
         var args = (object[])context.Items["args"];
-        await InvokeInternal(controller, method, args);
+        await InvokeInternal(controller, method, args, context);
 
         return true;
     }
 
-    private async Task<object?> InvokeInternal(BotControllerBase controller, MethodInfo method, object[] args)
+    private async ValueTask<object?> InvokeInternal(BotControllerBase controller, MethodInfo method, object[] args, IUpdateContext ctx)
     {
-        var param = method.GetParameters();
-        if (args.Length != param.Length)
-        {
-            throw new IndexOutOfRangeException();
-        }
-
-        // TODO: make parameter binder
-        var typedParams = param.Select((p, i) => (object)(p.ParameterType.Name switch
-        {
-#pragma warning disable CS8604 // Possible null reference argument.
-            nameof(Int32) => int.Parse(args[i].ToString()),
-            nameof(Int64) => long.Parse(args[i].ToString()),
-            nameof(Single) => float.Parse(args[i].ToString()),
-#pragma warning restore CS8604 // Possible null reference argument.
-            _ => MapDefault(p.ParameterType, args[i]),
-        })).ToArray();
+        var typedParams = await _binder.Bind(method, args, ctx);
 
         _log.LogDebug("Begin execute action {Controller}.{Method}. Arguments: {@Args}",
             method.DeclaringType!.Name,
@@ -69,19 +56,13 @@ public class BotControllersInvoker
         {
             await task;
         }
+        else if (result is ValueTask valueTask)
+        {
+            await valueTask;
+        }
 
         await controller.OnAfterCall();
 
         return result;
-    }
-
-    static object MapDefault(Type type, object input)
-    {
-        if (type.IsAssignableFrom(input.GetType()))
-        {
-            return input;
-        }
-
-        throw new NotImplementedException();
     }
 }

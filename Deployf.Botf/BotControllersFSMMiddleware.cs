@@ -4,28 +4,31 @@ namespace Deployf.Botf;
 
 public class BotControllersFSMMiddleware : IUpdateHandler
 {
+    public const string STATE_KEY = "$store";
+
     readonly ILogger<BotControllersFSMMiddleware> _log;
     readonly BotControllerStates _map;
-    readonly IChatFSM _sm;
+    readonly IKeyValueStorage _store;
 
-    public BotControllersFSMMiddleware(ILogger<BotControllersFSMMiddleware> log, BotControllerStates map, IChatFSM sm)
+    public BotControllersFSMMiddleware(ILogger<BotControllersFSMMiddleware> log, BotControllerStates map, IKeyValueStorage store)
     {
         _log = log;
         _map = map;
-        _sm = sm;
+        _store = store;
     }
 
     public async Task HandleAsync(IUpdateContext context, UpdateDelegate next, CancellationToken cancellationToken)
     {
-        Action? afterNext = null;
+        Func<ValueTask>? afterNext = null;
 
-        if (!context.Items.ContainsKey("controller"))
+        var uid = context.GetSafeUserId();
+        if (!context.Items.ContainsKey("controller") && uid != null)
         {
-            var state = _sm.Get(context.GetSafeChatId());
+            var state = await _store.Get<object>(uid.Value, STATE_KEY, null);
 
             if (state != null)
             {
-                afterNext = () => _sm.ClearState(context.GetSafeChatId());
+                afterNext = () => _store.Remove(uid.Value, STATE_KEY);
             }
 
             if (state != null && _map.TryGetValue(state.GetType(), out var value) && value != null)
@@ -41,17 +44,20 @@ public class BotControllersFSMMiddleware : IUpdateHandler
                 context.Items["action"] = value;
                 context.Items["controller"] = controller;
 
-                afterNext = () =>
+                afterNext = async () =>
                 {
-                    if (state == _sm.Get(context.GetSafeChatId()))
+                    if (state == await _store.Get<object>(uid.Value, STATE_KEY, null))
                     {
-                        _sm.ClearState(context.GetSafeChatId());
+                        await _store.Remove(uid.Value, STATE_KEY);
                     }
                 };
             }
         }
 
         await next(context, cancellationToken);
-        afterNext?.Invoke();
+        if(afterNext != null)
+        {
+            await afterNext();
+        }
     }
 }

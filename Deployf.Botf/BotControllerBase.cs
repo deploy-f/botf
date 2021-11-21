@@ -16,6 +16,7 @@ public abstract class BotControllerBase
     protected ITelegramBotClient Client { get; set; } = null!;
     protected MessageBuilder Message { get; set; } = new MessageBuilder();
     protected IKeyValueStorage? Store { get; set; }
+
     protected bool IsDirty
     {
         get => Message.IsDirty;
@@ -29,17 +30,31 @@ public abstract class BotControllerBase
         ChatId = Context.GetSafeChatId().GetValueOrDefault();
         FromId = Context.GetSafeUserId().GetValueOrDefault();
         Client = Context.Bot.Client;
-        if(Context.Items.TryGetValue("store", out var store))
-        {
-            Store = store as IKeyValueStorage; // todo: move outside
-        }
+        Store = Context.Services.GetService<IKeyValueStorage>(); // todo: move outside
         Message = new MessageBuilder();
     }
 
-    protected void State(object state)
+    protected ValueTask State(object state)
     {
-        var sm = Context!.Services.GetRequiredService<IChatFSM>();
-        sm.Set(ChatId, state);
+        return Store!.Set(FromId, BotControllersFSMMiddleware.STATE_KEY, state);
+    }
+
+    protected ValueTask AState<T>(T state, string? name = null) where T : notnull
+    {
+        if (name == null)
+        {
+            return Store!.Set(FromId, typeof(T).Name, state);
+        }
+        return Store!.Set(FromId, name, state);
+    }
+
+    protected ValueTask<T?> GetAState<T>(string? name = null, T? def = default)
+    {
+        if (name == null)
+        {
+            return Store!.Get(FromId, typeof(T).Name, def);
+        }
+        return Store!.Get(FromId, name, def);
     }
 
     public async Task Call<T>(Func<T, Task> method) where T : BotControllerBase
@@ -257,6 +272,7 @@ public abstract class BotControllerBase
     public string FPath(string controller, string action, params object[] args)
     {
         var routes = Context!.Services.GetRequiredService<BotControllerRoutes>();
+        var binder = Context!.Services.GetRequiredService<ArgumentBinder>();
         var hit = routes.FindTemplate(controller, action, args);
         if (hit.template == null)
         {
@@ -270,7 +286,8 @@ public abstract class BotControllerBase
 
         var splitter = hit.template.StartsWith("/") ? " " : "/";
 
-        var part2 = string.Join(splitter, args.Select(c => c.ToString()));
+        var parts = binder.Convert(hit!.method!, args, Context);
+        var part2 = string.Join(splitter, parts);
         return $"{hit.template}{splitter}{part2}".TrimEnd('/').TrimEnd();
     }
     #endregion
