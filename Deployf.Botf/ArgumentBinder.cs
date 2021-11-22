@@ -128,7 +128,7 @@ public class ArgumentBindEnum : IArgumentBind
 
     public string Encode(ParameterInfo parameter, object argument, IUpdateContext _)
     {
-        return Enum.Format(parameter.ParameterType, argument, "0");
+        return Enum.Format(parameter.ParameterType, argument, "D");
     }
 }
 
