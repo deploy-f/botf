@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Diagnostics;
+using System.Linq.Expressions;
 using Telegram.Bot;
 using Telegram.Bot.Framework.Abstractions;
 using Telegram.Bot.Types.Enums;
@@ -16,6 +17,8 @@ public abstract class BotControllerBase
     protected ITelegramBotClient Client { get; set; } = null!;
     protected MessageBuilder Message { get; set; } = new MessageBuilder();
     protected IKeyValueStorage? Store { get; set; }
+    protected IViewProvider? ViewProvider { get; set; }
+    protected IPathQuery? Query { get; set; }
 
     protected bool IsDirty
     {
@@ -31,6 +34,8 @@ public abstract class BotControllerBase
         FromId = Context.GetSafeUserId().GetValueOrDefault();
         Client = Context.Bot.Client;
         Store = Context.Services.GetService<IKeyValueStorage>(); // todo: move outside
+        ViewProvider = Context.Services.GetRequiredService<IViewProvider>();
+        Query = Context.Services.GetRequiredService<IPathQuery>();
         Message = new MessageBuilder();
     }
 
@@ -85,6 +90,12 @@ public abstract class BotControllerBase
         {
             await SendOrUpdate();
         }
+    }
+
+    public virtual void View(string viewName, object model)
+    {
+        var action = new StackFrame(1).GetMethod();
+        ViewProvider!.ExecuteView(new (viewName, Message, model, this, action));
     }
 
     #region sending
@@ -271,24 +282,7 @@ public abstract class BotControllerBase
 
     public string FPath(string controller, string action, params object[] args)
     {
-        var routes = Context!.Services.GetRequiredService<BotControllerRoutes>();
-        var binder = Context!.Services.GetRequiredService<ArgumentBinder>();
-        var hit = routes.FindTemplate(controller, action, args);
-        if (hit.template == null)
-        {
-            throw new KeyNotFoundException($"Item with controller and action ({controller}, {action}) not found");
-        }
-
-        if (hit!.method!.GetParameters().Length != args.Length)
-        {
-            throw new IndexOutOfRangeException($"Argument lengths not equals");
-        }
-
-        var splitter = hit.template.StartsWith("/") ? " " : "/";
-
-        var parts = binder.Convert(hit!.method!, args, Context);
-        var part2 = string.Join(splitter, parts);
-        return $"{hit.template}{splitter}{part2}".TrimEnd('/').TrimEnd();
+        return Query!.GetPath(controller, action, args);
     }
     #endregion
 }

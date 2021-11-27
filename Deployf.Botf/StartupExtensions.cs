@@ -97,6 +97,10 @@ public static class StartupExtensions
         services.AddSingleton<IArgumentBind, ArgumentAttributeBindState>();
         services.AddSingleton<ArgumentBinder>();
 
+        services.AddTransient<IViewProvider, ViewProvider>();
+        services.AddTransient<IViewPartialHandler, ViewPartialButtonHandler>();
+        services.AddTransient<IPathQuery, PathQuery>();
+
         return services;
     }
 

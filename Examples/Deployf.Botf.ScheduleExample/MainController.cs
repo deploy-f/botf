@@ -22,10 +22,8 @@ class MainController : BotControllerBase
     [Action("/start", "start the bot")]
     public void Start()
     {
-        PushL("Hello!");
-        PushL("This bot allow you and users to book the time slot");
-        PushL();
-        PushL($"Link to book your free slots: https://t.me/{_options.Username}?start={FromId.Base64()}");
+        var model = new { link = $"https://t.me/{_options.Username}?start={FromId.Base64()}" };
+        View("view.html", model);
     }
 
 

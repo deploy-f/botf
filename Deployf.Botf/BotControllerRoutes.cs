@@ -51,6 +51,23 @@ public class BotControllerRoutes : BotControllerListMap<string>
         return (null, null);
     }
 
+    public (string? template, MethodInfo? method) FindTemplate(string controller, string action, IDictionary<string,object> args)
+    {
+        foreach (var item in this)
+        {
+            var parameters = item.action.GetParameters();
+            if (item.action.Name == action
+                && item.action.DeclaringType!.Name == controller
+                && args.Count == parameters.Length
+                && parameters.All(c => args.ContainsKey(c.Name!))) //TODO: check the argument types
+            {
+                return (item.command, item.action);
+            }
+        }
+
+        return (null, null);
+    }
+
     public bool TryGetValue(string key, string[] arguments, out MethodInfo method)
     {
         foreach (var item in this)

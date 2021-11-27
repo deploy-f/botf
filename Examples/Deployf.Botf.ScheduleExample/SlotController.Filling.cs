@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace Deployf.Botf.ScheduleExample;
+﻿namespace Deployf.Botf.ScheduleExample;
 
 /// Filling part of slots
 partial class SlotController : BotControllerBase

@@ -15,4 +15,10 @@
     <ProjectReference Include="..\..\Deployf.Botf\Deployf.Botf.csproj" />
   </ItemGroup>
 
+    <ItemGroup>
+	    <Content Include="Views\*.*">
+		    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	    </Content>
+    </ItemGroup>
+
 </Project>
