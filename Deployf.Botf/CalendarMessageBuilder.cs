@@ -34,31 +34,31 @@ public class CalendarMessageBuilder
         _state.Culture = _culture;
     }
 
-    public CalendarMessageBuilder Year(int year)
+    public CalendarMessageBuilder Year(int? year)
     {
         _state.Year = year;
         return this;
     }
 
-    public CalendarMessageBuilder Month(int month)
+    public CalendarMessageBuilder Month(int? month)
     {
         _state.Month = month;
         return this;
     }
 
-    public CalendarMessageBuilder Day(int day)
+    public CalendarMessageBuilder Day(int? day)
     {
         _state.Day = day;
         return this;
     }
 
-    public CalendarMessageBuilder Hour(int hour)
+    public CalendarMessageBuilder Hour(int? hour)
     {
         _state.Hour = hour;
         return this;
     }
 
-    public CalendarMessageBuilder Minute(int minute)
+    public CalendarMessageBuilder Minute(int? minute)
     {
         _state.Minute = minute;
         return this;
@@ -374,7 +374,7 @@ public class CalendarMessageBuilder
 
             if (!skipNext)
             {
-                b.Button($"➡️ {next.ToStringMonth()}", _nav!(next));
+                b.Button($"{next.ToStringMonth()} ➡️", _nav!(next));
             }
         }
 

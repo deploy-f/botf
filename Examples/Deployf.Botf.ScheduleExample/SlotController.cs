@@ -25,9 +25,9 @@ public partial class SlotController
     }
 
     [Action("/fill", "add a serries slots")]
-    void FillCommand()
+    async ValueTask FillCommand()
     {
-        FillCalendar();
+        FillCalendar(await GetAState<FillState>());
     }
 
     [Action("/add", "add the time free slot")]

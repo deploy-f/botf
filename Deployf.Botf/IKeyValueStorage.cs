@@ -1,28 +1,71 @@
-﻿namespace Deployf.Botf;
+﻿using System.Collections.Concurrent;
 
-public interface IKeyValueStorage : IDictionary<string, object>
+namespace Deployf.Botf;
+
+public interface IKeyValueStorage
 {
-    T Get<T>(string key, T defaultValue);
+    ValueTask<T?> Get<T>(long userId, string key, T? defaultValue);
+    ValueTask<object?> Get(long userId, string key, object? defaultValue);
+    ValueTask Set(long userId, string key, object value);
+    ValueTask Remove(long userId, string key);
+    ValueTask<bool> Contain(long userId, string key);
 }
 
-public class KeyValueStorage : Dictionary<string, object>, IKeyValueStorage
+public class InMemoryKeyValueStorage : IKeyValueStorage
 {
-    public T Get<T>(string key, T defaultValue)
+    readonly IDictionary<string, object> _store;
+
+    public InMemoryKeyValueStorage()
     {
-        if(TryGetValue(key, out var value))
+        _store = new ConcurrentDictionary<string, object>();
+    }
+
+    public ValueTask<bool> Contain(long userId, string key)
+    {
+        var realKey = GetRealKey(userId, key);
+        return new(_store.ContainsKey(realKey));
+    }
+
+    public ValueTask<T?> Get<T>(long userId, string key, T? defaultValue)
+    {
+        var realKey = GetRealKey(userId, key);
+        if(_store.TryGetValue(realKey, out var value))
         {
-            return (T)value;
+            return new ((T)value);
         }
 
-        return defaultValue;
+        return new (defaultValue);
     }
-}
 
-public interface IUserKVStorage : IDictionary<long, object>
-{
+    public ValueTask<object?> Get(long userId, string key, object? defaultValue)
+    {
+        var realKey = GetRealKey(userId, key);
+        if (_store.TryGetValue(realKey, out var value))
+        {
+            return new(value);
+        }
 
-}
+        return new(defaultValue);
+    }
 
-public class UserKVStorage : Dictionary<long, object>, IUserKVStorage
-{
+    public async ValueTask Remove(long userId, string key)
+    {
+        if(await Contain(userId, key))
+        {
+            var realKey = GetRealKey(userId, key);
+            _store.Remove(realKey);
+        }
+    }
+
+    public ValueTask Set(long userId, string key, object value)
+    {
+        var realKey = GetRealKey(userId, key);
+        _store[realKey] = value!;
+        return ValueTask.CompletedTask;
+    }
+
+    string GetRealKey(long userId, string key)
+    {
+        return userId.ToString() + "/" + key;
+    }
 }
