@@ -1,5 +1,6 @@
 ﻿using CsQuery;
 using DotLiquid;
+using System.Globalization;
 using System.Reflection;
 using Telegram.Bot.Types.Enums;
 
@@ -39,7 +40,16 @@ public class ViewProvider : IViewProvider
     {
         var viewTemplate = GetView(data.View);
         var template = Template.Parse(viewTemplate);
-        var view = template.Render(Hash.FromAnonymousObject(data));
+
+        var model = Hash.FromAnonymousObject(data);
+        model["Model"] = Hash.FromAnonymousObject(data.Model);
+
+        var renderParameters = new RenderParameters(CultureInfo.CurrentCulture)
+        {
+            ErrorsOutputMode = ErrorsOutputMode.Rethrow,
+            LocalVariables = model
+        };
+        var view = template.Render(renderParameters);
         var initialDom = CQ.Create(view);
         var resultDom = initialDom;
         foreach(var handler in Handlers)

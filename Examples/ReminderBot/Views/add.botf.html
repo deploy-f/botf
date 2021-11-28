@@ -1,0 +1,37 @@
+﻿<b>Adding reminder for this chat</b>
+
+<button action="ReminderController/LoopStart" state="">
+    {% if model.is_time_set -%}
+    At {{ model.time | date: "%H:%M" }}
+    {% else -%}
+    Set time
+    {% endif -%}
+</button>
+
+<button action="ReminderController/LoopTo" state="">
+    {% if model.is_to_set -%}
+        To {{ model.to | date: "%Y-%m-%d" }}
+    {% else -%}
+        Set end date
+    {% endif -%}
+</button>
+
+<button action="ReminderController/LoopWeekday" state="{{ model.weekday }}">
+    {% if model.weekday != 0 -%}
+    On these days: {{ model.weekday }}
+    {% else -%}
+    Set days to repeat
+    {% endif -%}
+</button>
+
+<button action="ReminderController/Comment">
+    {% if model.comment != null -%}
+        Comment: {{ model.comment }}
+    {% else -%}
+        Set comment
+    {% endif -%}
+</button>
+
+{% if model.isset -%}
+<button action="ReminderController/CreateReminder">Create</button>
+{% endif -%}
