@@ -6,11 +6,13 @@ public class BotControllersExceptionMiddleware : IUpdateHandler
 {
     readonly BotControllersInvoker _invoker;
     readonly BotControllerHandlers _handlers;
+    readonly ILogger<BotControllersExceptionMiddleware> _logger;
 
-    public BotControllersExceptionMiddleware(BotControllersInvoker invoker, BotControllerHandlers handlers)
+    public BotControllersExceptionMiddleware(BotControllersInvoker invoker, BotControllerHandlers handlers, ILogger<BotControllersExceptionMiddleware> logger)
     {
         _invoker = invoker;
         _handlers = handlers;
+        _logger = logger;
     }
 
     public async Task HandleAsync(IUpdateContext context, UpdateDelegate next, CancellationToken cancellationToken)
@@ -39,7 +41,8 @@ public class BotControllersExceptionMiddleware : IUpdateHandler
         {
             if (!_handlers.TryGetValue(Handle.Exception, out var controller))
             {
-                throw ex;
+                _logger.LogError(ex, "unhandled exception");
+                return;
             }
 
             if (controller.GetParameters().Length == 0)

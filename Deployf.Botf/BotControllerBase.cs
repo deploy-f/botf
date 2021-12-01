@@ -247,7 +247,21 @@ public abstract class BotControllerBase
         return FPath(noArgs.Method.DeclaringType!.Name, noArgs.Method.Name);
     }
 
+    public string Q<T>(Expression<Func<T, Action>> noArgs) where T : BotControllerBase
+    {
+        dynamic param = noArgs;
+        var name = param.Body.Operand.Object.Value.Name;
+        return FPath(typeof(T).Name, name);
+    }
+
     public string Q<T>(Expression<Func<T, Func<Task>>> noArgs) where T : BotControllerBase
+    {
+        dynamic param = noArgs;
+        var name = param.Body.Operand.Object.Value.Name;
+        return FPath(typeof(T).Name, name);
+    }
+
+    public string Q<T>(Expression<Func<T, Func<ValueTask>>> noArgs) where T : BotControllerBase
     {
         dynamic param = noArgs;
         var name = param.Body.Operand.Object.Value.Name;
