@@ -45,18 +45,19 @@ class MainController : BotControllerBase
         Push($"Current timezone: {user.TimeZone}");
 
         var pager = new PagingService();
-        var pageModel = pager.Paging(_timeZones.AsQueryable(), new PageFilter { Count = 20, Page = page });
-        Pager(pageModel, i => (i.DisplayName, Q(SetTimezone, i.Id)), Q(ListTimezones, "{0}"));
+        var query = _timeZones.Select((c, i) => new { zone = c, index = i }).AsQueryable();
+        var pageModel = pager.Paging(query, new PageFilter { Count = 10, Page = page });
+        Pager(pageModel, i => (i.zone.DisplayName, Q(SetTimezone, i.index)), Q(ListTimezones, "{0}"), 1);
     }
 
     [Action]
-    public void SetTimezone(string zone)
+    public void SetTimezone(int zone)
     {
         var user = _users.First(c => c.Id == FromId);
-        user.TimeZone = zone;
+        user.TimeZone = _timeZones.ElementAt(zone).Id;
         _db.Update(user);
 
-        Push("Timezone has setted");
+        Push("Timezone has been setted");
         Button("Back to main menu", Q(Start));
     }
 

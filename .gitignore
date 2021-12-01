@@ -6,3 +6,4 @@
 **/**.csproj.user
 **/db.sqlite
 /Examples/Deployf.Botf.ReminderBot/Hangfire.db
+**/publish
