@@ -46,7 +46,10 @@ public static class StartupExtensions
             .Select(c => new BotCommand { Command = c.command, Description = c.action.GetActionDescription() })
             .ToList();
 
-        bot.Client.SetMyCommandsAsync(commands).GetAwaiter().GetResult();
+        bot.Client.SetMyCommandsAsync(commands)
+            .ConfigureAwait(false)
+            .GetAwaiter()
+            .GetResult();
 
 
         return app;
@@ -175,7 +178,9 @@ public static class StartupExtensions
             logger.LogInformation("Setting webhook to URL \"{0}\"", options.WebhookUrl);
 
             bot.Client.SetWebhookAsync(options.WebhookUrl)
-                .GetAwaiter().GetResult();
+                .ConfigureAwait(false)
+                .GetAwaiter()
+                .GetResult();
         }
 
         return app;

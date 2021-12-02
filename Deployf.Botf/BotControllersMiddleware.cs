@@ -1,4 +1,5 @@
 ﻿using Telegram.Bot.Framework.Abstractions;
+using Telegram.Bot.Types.Enums;
 
 namespace Deployf.Botf;
 
@@ -7,12 +8,14 @@ public class BotControllersMiddleware : IUpdateHandler
     readonly ILogger<BotControllersMiddleware> _log;
     readonly BotControllerRoutes _map;
     readonly IBotContextAccessor _accessor;
+    readonly BotfOptions _opts;
 
-    public BotControllersMiddleware(BotControllerRoutes map, IBotContextAccessor accessor, ILogger<BotControllersMiddleware> log)
+    public BotControllersMiddleware(BotControllerRoutes map, IBotContextAccessor accessor, ILogger<BotControllersMiddleware> log, BotfOptions opts)
     {
         _map = map;
         _accessor = accessor;
         _log = log;
+        _opts = opts;
     }
 
     public async Task HandleAsync(IUpdateContext context, UpdateDelegate next, CancellationToken cancellationToken)
@@ -31,7 +34,9 @@ public class BotControllersMiddleware : IUpdateHandler
             {
                 entries = payload.Split("/", StringSplitOptions.RemoveEmptyEntries);
             }
-            var key = entries[0];
+
+            var key = ExtractGroupKey(context, entries[0]);
+
             var arguments = entries.Skip(1).ToArray();
 
             if (_map.TryGetValue(key, arguments, out var value) && value != null)
@@ -52,4 +57,25 @@ public class BotControllersMiddleware : IUpdateHandler
 
         await next(context, cancellationToken);
     }
+
+    private string ExtractGroupKey(IUpdateContext context, string key)
+    {
+        var updateType = context.Update.Type;
+        var message = context.Update.Message ?? context.Update.EditedMessage;
+        // detect commands in chats like "/command@botname ..."
+        if (key[0] == '/'
+            && (updateType == UpdateType.EditedMessage || updateType == UpdateType.Message)
+            && message.Chat.Id != message.From.Id
+            && key.Contains('@')
+            && key.Count(CharEqualDog) == 1
+            && key.EndsWith(_opts.UsernameTag!))
+        {
+            var tuple = key.Split('@', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            key = tuple[0];
+        }
+
+        return key;
+    }
+
+    static bool CharEqualDog(char c) => c == '@';
 }

@@ -96,7 +96,7 @@ public class ReminderController : BotControllerBase
     void Fill_Comment()
     {
         State(new SetCommentState());
-        Push("Send a comment");
+        Push("Reply to this message with a comment");
     }
 
     [State]
