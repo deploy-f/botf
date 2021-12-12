@@ -18,10 +18,7 @@ class Program : BotfProgram
         Push($"Send `{nameof(Hello)}` to me, please!");
     }
 
-    // If we dont put any parameter into Action attribute,
-    // it means that this method will handle messages with hame of the method.
-    // Yep, in this case, you should care about the method's name.
-    [Action]
+    [Action(nameof(Hello))]
     public void Hello()
     {
         Push("Hey! Thank you! That's it.");

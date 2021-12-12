@@ -26,7 +26,8 @@ partial class SlotController
                     CalendarDepth.Months => "month",
                     CalendarDepth.Days => "day",
                     CalendarDepth.Hours => "hour",
-                    CalendarDepth.Minutes => "minute"
+                    CalendarDepth.Minutes => "minute",
+                    _ => throw new NotImplementedException()
                 };
                 b.Push($"Select {selection} of the from date");
             })
@@ -59,7 +60,8 @@ partial class SlotController
                     CalendarDepth.Months => "month",
                     CalendarDepth.Days => "day",
                     CalendarDepth.Hours => "hour",
-                    CalendarDepth.Minutes => "minute"
+                    CalendarDepth.Minutes => "minute",
+                    _ => throw new NotImplementedException()
                 };
                 b.Push($"Select {selection} of the to date");
             })

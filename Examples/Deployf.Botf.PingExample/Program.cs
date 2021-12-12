@@ -8,6 +8,6 @@ class Program : BotfProgram
     public async Task Unknown()
     {
         Reply();
-        await Send(Context.GetSafeTextPayload());
+        await Send(Context.GetSafeTextPayload()!);
     }
 }

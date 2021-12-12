@@ -33,7 +33,7 @@ public class User
     public string FullName { get; set; } = String.Empty;
 
     public UserRole Roles { get; set; }
-    public string Timezone { get; set; }
+    public string? Timezone { get; set; }
 }
 
 public enum State

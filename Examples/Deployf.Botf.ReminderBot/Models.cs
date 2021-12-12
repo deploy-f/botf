@@ -13,7 +13,7 @@ public class Reminder
 
     public WeekDay Repeating { get; set; }
 
-    public string Comment { get; set; }
+    public string? Comment { get; set; }
 }
 
 public class User

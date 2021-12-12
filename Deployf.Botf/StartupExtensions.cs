@@ -1,4 +1,5 @@
-﻿using Telegram.Bot.Framework;
+﻿using Telegram.Bot;
+using Telegram.Bot.Framework;
 using Telegram.Bot.Framework.Abstractions;
 using Telegram.Bot.Requests;
 using Telegram.Bot.Types;
@@ -43,7 +44,7 @@ public static class StartupExtensions
             .Where(c => string.IsNullOrEmpty(c.action.GetAuthPolicy()))
             .Where(c => c.action.GetParameters().Length == 0)
             .Where(c => !string.IsNullOrEmpty(c.action.GetActionDescription()))
-            .Select(c => new BotCommand { Command = c.command, Description = c.action.GetActionDescription() })
+            .Select(c => new BotCommand { Command = c.command, Description = c.action.GetActionDescription()! })
             .ToList();
 
         bot.Client.SetMyCommandsAsync(commands)
@@ -93,6 +94,7 @@ public static class StartupExtensions
 
         services.AddSingleton<IArgumentBind, ArgumentBindInt32>();
         services.AddSingleton<IArgumentBind, ArgumentBindInt64>();
+        services.AddSingleton<IArgumentBind, ArgumentBindBoolean>();
         services.AddSingleton<IArgumentBind, ArgumentBindSingle>();
         services.AddSingleton<IArgumentBind, ArgumentBindString>();
         services.AddSingleton<IArgumentBind, ArgumentBindDateTime>();
@@ -177,7 +179,7 @@ public static class StartupExtensions
 
             logger.LogInformation("Setting webhook to URL \"{0}\"", options.WebhookUrl);
 
-            bot.Client.SetWebhookAsync(options.WebhookUrl)
+            bot.Client.SetWebhookAsync(options.WebhookUrl!)
                 .ConfigureAwait(false)
                 .GetAwaiter()
                 .GetResult();

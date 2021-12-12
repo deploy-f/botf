@@ -17,7 +17,7 @@ public class ReminderJob
     {
         try
         {
-            Message.Push(reminder.Comment);
+            Message.Push(reminder.Comment!);
             Message.SetChatId(reminder.ChatId);
             await Sender.Send(Message);
         }

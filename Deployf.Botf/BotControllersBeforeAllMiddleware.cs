@@ -23,9 +23,9 @@ public class BotControllersBeforeAllMiddleware : IUpdateHandler
         // avoid handling updates in group that is not addressed to bot
         if (_options.HandleOnlyMentionedInGroups
             && (update.Type == UpdateType.EditedMessage || update.Type == UpdateType.Message)
-            && message.Chat.Id != message.From.Id // detect that we are in private chat with user
-            && !((message.ReplyToMessage != null && message.ReplyToMessage.From.Username == _options.Username)
-               || (message.Text.Contains(_options.UsernameTag!)))
+            && message!.Chat.Id != message.From!.Id // detect that we are in private chat with user
+            && !((message.ReplyToMessage != null && message.ReplyToMessage.From!.Username == _options.Username)
+               || (message.Text!.Contains(_options.UsernameTag!)))
         ){
             return;
         }

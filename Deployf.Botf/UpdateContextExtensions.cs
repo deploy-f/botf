@@ -7,12 +7,12 @@ public static class UpdateContextExtensions
 {
     public static long GetChatId(this IUpdateContext context)
     {
-        return context.Update.Message.Chat.Id;
+        return context.Update!.Message!.Chat.Id;
     }
 
     public static long GetUserId(this IUpdateContext context)
     {
-        return context.Update.Message.From.Id;
+        return context!.Update!.Message!.From!.Id;
     }
 
     public static long? GetSafeChatId(this IUpdateContext context)
@@ -24,16 +24,16 @@ public static class UpdateContextExtensions
 
     public static long? GetSafeUserId(this IUpdateContext context)
     {
-        return context.Update.Message?.From.Id
-               ?? context.Update.EditedMessage?.From.Id
-               ?? context.Update.CallbackQuery?.From.Id;
+        return context.Update.Message?.From?.Id
+               ?? context.Update.EditedMessage?.From?.Id
+               ?? context.Update.CallbackQuery?.From?.Id;
     }
 
     public static long UserId(this IUpdateContext context)
     {
-        var value = context.Update.Message?.From.Id
-               ?? context.Update.EditedMessage?.From.Id
-               ?? context.Update.CallbackQuery?.From.Id;
+        var value = context.Update.Message?.From?.Id
+               ?? context.Update.EditedMessage?.From?.Id
+               ?? context.Update.CallbackQuery?.From?.Id;
 
         return value!.Value;
     }
@@ -45,13 +45,13 @@ public static class UpdateContextExtensions
 
     public static int? GetCallbackMessageId(this IUpdateContext context)
     {
-        return context.Update.CallbackQuery.Message?.MessageId;
+        return context.Update!.CallbackQuery!.Message?.MessageId;
     }
 
     public static int? GetSafeMessageId(this IUpdateContext context)
     {
         return context.Update.Message?.MessageId
-               ?? context.Update.CallbackQuery?.Message.MessageId
+               ?? context.Update.CallbackQuery?.Message?.MessageId
                ?? context.Update.EditedMessage?.MessageId;
     }
 
@@ -63,12 +63,12 @@ public static class UpdateContextExtensions
 
     public static CallbackQuery GetCallbackQuery(this IUpdateContext context)
     {
-        return context.Update.CallbackQuery;
+        return context!.Update!.CallbackQuery!;
     }
 
     public static long GetCallbackQueryChatId(this IUpdateContext context)
     {
-        return context.Update.CallbackQuery.Message.Chat.Id;
+        return context!.Update!.CallbackQuery!.Message!.Chat.Id;
     }
 
     public static string? GetTypeValue(this IUpdateContext context)
@@ -80,20 +80,20 @@ public static class UpdateContextExtensions
 
     public static string? GetUsername(this IUpdateContext context)
     {
-        return context.Update.Message?.From.Username
+        return context.Update.Message?.From?.Username
                ?? context.Update.CallbackQuery?.From.Username
-               ?? context.Update.EditedMessage?.From.Username;
+               ?? context.Update.EditedMessage?.From?.Username;
     }
 
     public static string GetUserFullName(this IUpdateContext context)
     {
-        var first = context.Update.Message?.From.FirstName
-               ?? context.Update.CallbackQuery?.From.FirstName
-               ?? context.Update.EditedMessage?.From.FirstName;
+        var first = context.Update.Message?.From?.FirstName
+               ?? context.Update.CallbackQuery?.From?.FirstName
+               ?? context.Update.EditedMessage?.From?.FirstName;
 
-        var last = context.Update.Message?.From.LastName
-               ?? context.Update.CallbackQuery?.From.LastName
-               ?? context.Update.EditedMessage?.From.LastName;
+        var last = context.Update.Message?.From?.LastName
+               ?? context.Update.CallbackQuery?.From?.LastName
+               ?? context.Update.EditedMessage?.From?.LastName;
 
         return first + " " + last;
     }

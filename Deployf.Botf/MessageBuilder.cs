@@ -11,7 +11,7 @@ public class MessageBuilder
     public IReplyMarkup? Markup { get; set; }
     public List<List<InlineKeyboardButton>>? Reply { get; set; }
     public int ReplyToMessageId { get; set; } = 0;
-    public ParseMode ParseMode { get; set; } = ParseMode.Default;
+    public ParseMode ParseMode { get; set; } = Telegram.Bot.Types.Enums.ParseMode.Html;
     public bool IsDirty { get; set; }
 
     public string Message => BufferedMessage?.ToString() ?? string.Empty;

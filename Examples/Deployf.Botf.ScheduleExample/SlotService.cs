@@ -1,5 +1,8 @@
 ﻿using Deployf.Botf;
 using SQLite;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 public class SlotService
 {
@@ -68,9 +71,10 @@ public class SlotService
         }
     }
 
-    public async ValueTask Add(Schedule slot)
+    public ValueTask Add(Schedule slot)
     {
         _db.Insert(slot);
+        return ValueTask.CompletedTask;
     }
 
     public async ValueTask AddSeries(CreateSeriesParams param)
@@ -105,7 +109,7 @@ public class SlotService
         model.State = State.Requested;
         _db.Update(model);
 
-        if (model.OwnerId != null)
+        if (model.OwnerId != 0)
         {
             var msg = new MessageBuilder()
                 .SetChatId(model.OwnerId)
@@ -182,15 +186,15 @@ public class SlotService
         return model;
     }
 
-    public async ValueTask<Schedule> Free(int scheduleId)
+    public ValueTask<Schedule> Free(int scheduleId)
     {
         var model = _repo.First(c => c.Id == scheduleId);
         model.State = State.Free;
         _db.Update(model);
-        return model;
+        return new (model);
     }
 
-    public async ValueTask<Paging<Schedule>> GetFreeSlots(long userId, DateTime day, PageFilter page)
+    public ValueTask<Paging<Schedule>> GetFreeSlots(long userId, DateTime day, PageFilter page)
     {
         var date = day.Date;
         var tomorrow = date.AddDays(1);
@@ -199,22 +203,22 @@ public class SlotService
             && c.From < tomorrow
             && c.State == State.Free
         ).AsQueryable();
-        return _paging.Paging(query, page);
+        return new (_paging.Paging(query, page));
     }
 
-    public async ValueTask<Paging<DateTime>> GetFreeDays(long userId, DateTime day, PageFilter page)
+    public ValueTask<Paging<DateTime>> GetFreeDays(long userId, DateTime day, PageFilter page)
     {
         var query = _repo.Where(c => c.OwnerId == userId && c.From >= day && c.State == State.Free)
             .DistinctBy(c => c.From.Date)
             .Select(c => c.From.Date)
             .AsQueryable();
-        return _paging.Paging(query, page);
+        return new (_paging.Paging(query, page));
     }
 
-    public async ValueTask<Paging<User>> GetSchedulers(PageFilter filer)
+    public ValueTask<Paging<User>> GetSchedulers(PageFilter filer)
     {
         var query = _users.Where(c => (c.Roles & UserRole.scheduler) == UserRole.scheduler).AsQueryable();
-        return _paging.Paging(query, filer);
+        return new (_paging.Paging(query, filer));
     }
 }
 

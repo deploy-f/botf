@@ -29,11 +29,19 @@ public class BotControllerFactory
         var route = method.GetCustomAttribute<ActionAttribute>();
         if(route != null)
         {
-            return route.Template ?? method.Name;
+            return route.Template ?? GetAnonymousName(method);
         }
 
         return null;
+
+        static string GetAnonymousName(MethodInfo m)
+        {
+            var signature = m.ToString()!;
+            var hash = signature.GetDeterministicHashCode().ToString().TruncateEnd(5);
+            return $"${hash}_{m.Name}";
+        }
     }
+
 
     public static BotControllerStates MakeStates()
     {

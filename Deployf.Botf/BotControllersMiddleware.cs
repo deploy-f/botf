@@ -65,7 +65,7 @@ public class BotControllersMiddleware : IUpdateHandler
         // detect commands in chats like "/command@botname ..."
         if (key[0] == '/'
             && (updateType == UpdateType.EditedMessage || updateType == UpdateType.Message)
-            && message.Chat.Id != message.From.Id
+            && message!.Chat.Id != message.From!.Id
             && key.Contains('@')
             && key.Count(CharEqualDog) == 1
             && key.EndsWith(_opts.UsernameTag!))

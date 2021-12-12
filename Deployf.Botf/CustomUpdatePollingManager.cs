@@ -1,4 +1,5 @@
-﻿using Telegram.Bot.Framework;
+﻿using Telegram.Bot;
+using Telegram.Bot.Framework;
 using Telegram.Bot.Framework.Abstractions;
 using Telegram.Bot.Requests;
 using Telegram.Bot.Types;

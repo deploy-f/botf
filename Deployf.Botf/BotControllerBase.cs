@@ -69,6 +69,18 @@ public abstract class BotControllerBase
         await controller.OnAfterCall();
     }
 
+    public async Task Call<T>(Action<T> method) where T : BotControllerBase
+    {
+        var controller = Context!.Services.GetRequiredService<T>();
+        controller.Init(Context, CancelToken);
+        controller.User = User;
+        controller.Message = Message;
+        controller.Store = Store;
+        await controller.OnBeforeCall();
+        method(controller);
+        await controller.OnAfterCall();
+    }
+
     public virtual Task OnBeforeCall()
     {
         return Task.CompletedTask;
@@ -104,7 +116,7 @@ public abstract class BotControllerBase
     {
         IsDirty = false;
         await Context!.Bot.Client.SendTextMessageAsync(
-            Context!.GetSafeChatId(),
+            Context!.GetSafeChatId()!,
             text,
             ParseMode.Html,
             replyMarkup: Message.Markup,
@@ -115,7 +127,7 @@ public abstract class BotControllerBase
     public async Task UpdateMarkup(InlineKeyboardMarkup markup)
     {
         await Context!.Bot.Client.EditMessageReplyMarkupAsync(
-            Context!.GetSafeChatId(),
+            Context!.GetSafeChatId()!,
             Context!.GetSafeMessageId().GetValueOrDefault(),
             markup,
             cancellationToken: CancelToken
@@ -126,7 +138,7 @@ public abstract class BotControllerBase
     {
         IsDirty = false;
         await Context!.Bot.Client.EditMessageTextAsync(
-            Context!.GetSafeChatId(),
+            Context!.GetSafeChatId()!,
             Context!.GetSafeMessageId().GetValueOrDefault(),
             text ?? Message.Message,
             parseMode: mode,
@@ -142,7 +154,7 @@ public abstract class BotControllerBase
 
     protected async Task Send(string text)
     {
-        await Send(text, ParseMode.Default);
+        await Send(text, ParseMode.Html);
     }
 
     protected async Task AnswerCallback(string? text = null)
@@ -181,6 +193,12 @@ public abstract class BotControllerBase
     protected void PushL(string line = "")
     {
         Message.PushL(line);
+    }
+
+    protected void PushLL(string line = "")
+    {
+        Message.PushL(line);
+        Message.PushL();
     }
 
     protected void Push(string line = "")
@@ -266,6 +284,27 @@ public abstract class BotControllerBase
         dynamic param = noArgs;
         var name = param.Body.Operand.Object.Value.Name;
         return FPath(typeof(T).Name, name);
+    }
+
+    public string Q<T, A1>(Expression<Func<T, Action<A1>>> oneArg, object arg1) where T : BotControllerBase
+    {
+        dynamic param = oneArg;
+        var name = param.Body.Operand.Object.Value.Name;
+        return FPath(typeof(T).Name, name, arg1);
+    }
+
+    public string Q<T, A1>(Expression<Func<T, Func<A1, Task>>> oneArg, object arg1) where T : BotControllerBase
+    {
+        dynamic param = oneArg;
+        var name = param.Body.Operand.Object.Value.Name;
+        return FPath(typeof(T).Name, name, arg1);
+    }
+
+    public string Q<T, A1>(Expression<Func<T, Func<A1, ValueTask>>> oneArg, object arg1) where T : BotControllerBase
+    {
+        dynamic param = oneArg;
+        var name = param.Body.Operand.Object.Value.Name;
+        return FPath(typeof(T).Name, name, arg1);
     }
 
     public string Q<T>(Func<T, Task> oneArg, object arg)
