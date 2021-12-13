@@ -55,12 +55,12 @@ public static class BotRoutesExtensions
         return str.Substring(str.Length - length - 1);
     }
 
-    public static int GetDeterministicHashCode(this string str)
+    public static long GetDeterministicHashCode(this string str)
     {
         unchecked
         {
-            int hash1 = (5381 << 16) + 5381;
-            int hash2 = hash1;
+            long hash1 = (5381 << 16) + 5381;
+            long hash2 = hash1;
 
             for (int i = 0; i < str.Length; i += 2)
             {

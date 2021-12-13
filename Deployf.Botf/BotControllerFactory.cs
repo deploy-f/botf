@@ -36,8 +36,11 @@ public class BotControllerFactory
 
         static string GetAnonymousName(MethodInfo m)
         {
-            var signature = m.ToString()!;
-            var hash = signature.GetDeterministicHashCode().ToString().TruncateEnd(5);
+            var signature = $"{m.DeclaringType!.FullName}_{m}";
+            var hash = signature.GetDeterministicHashCode()
+                .Base64()
+                .Replace('/', '_')
+                .TruncateEnd(5);
             return $"${hash}_{m.Name}";
         }
     }
