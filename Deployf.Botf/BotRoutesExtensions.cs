@@ -28,7 +28,7 @@ public static class BotRoutesExtensions
 
     public static string? GetActionDescription(this MethodInfo method)
     {
-        var action = method.GetCustomAttribute<ActionAttribute>();
+        var action = method.GetCustomAttributes<ActionAttribute>().FirstOrDefault(c => c.Desc != null);
         if (action == null)
         {
             return null;

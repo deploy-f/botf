@@ -10,8 +10,9 @@ public class MessageBuilder
     public StringBuilder BufferedMessage { get; private set; } = new StringBuilder();
     public IReplyMarkup? Markup { get; set; }
     public List<List<InlineKeyboardButton>>? Reply { get; set; }
+    public List<List<KeyboardButton>>? Keyboard { get; set; }
     public int ReplyToMessageId { get; set; } = 0;
-    public ParseMode ParseMode { get; set; } = Telegram.Bot.Types.Enums.ParseMode.Html;
+    public ParseMode ParseMode { get; set; } = ParseMode.Html;
     public bool IsDirty { get; set; }
 
     public string Message => BufferedMessage?.ToString() ?? string.Empty;
@@ -105,6 +106,70 @@ public class MessageBuilder
         IsDirty = true;
         return this;
     }
+
+
+
+    public MessageBuilder MakeKButtonRow()
+    {
+        if (Keyboard == null)
+        {
+            Keyboard = new List<List<KeyboardButton>>();
+        }
+
+        Keyboard.Add(new List<KeyboardButton>());
+        IsDirty = true;
+        return this;
+    }
+
+    public MessageBuilder RowKButton(string text)
+    {
+        MakeKButtonRow();
+        KButton(text);
+        return this;
+    }
+
+    public MessageBuilder LineKButton(string text)
+    {
+        MakeKButtonRow();
+        KButton(text);
+        MakeKButtonRow();
+        return this;
+    }
+
+    public MessageBuilder RowKButton(KeyboardButton button)
+    {
+        MakeKButtonRow();
+        KButton(button);
+        return this;
+    }
+
+    public MessageBuilder KButton(string text)
+    {
+        KButton(new KeyboardButton(text));
+        return this;
+    }
+
+    public MessageBuilder KButton(KeyboardButton button)
+    {
+        if (Keyboard == null)
+        {
+            MakeKButtonRow();
+        }
+
+        Keyboard!.Last().Add(button);
+        Markup = new ReplyKeyboardMarkup(Keyboard!.Where(c => c.Count > 0));
+        IsDirty = true;
+        return this;
+    }
+
+    public MessageBuilder RemoveKeyboard()
+    {
+        Keyboard = null;
+        Markup = null;
+        IsDirty = true;
+        return this;
+    }
+
 
     public MessageBuilder Pager<T>(Paging<T> page, Func<T, (string text, string data)> row, string format, int buttonsInRow = 2)
     {

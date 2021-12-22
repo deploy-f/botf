@@ -1,22 +1,32 @@
 ﻿using System.Reflection;
+using Telegram.Bot.Framework.Abstractions;
 
 namespace Deployf.Botf;
 
+public delegate ValueTask<bool> RouteSkipDelegate(string command, RouteInfo<string> info, IUpdateContext context);
+public delegate RouteSkipDelegate? RouteSkipFactoryDelegate(bool hasStates, MethodInfo action);
+
 public class BotControllerFactory
 {
-    private static Type baseController { get; } = typeof(BotControllerBase);
+    private static Type baseController { get; } = typeof(BotController);
     private static List<Type> _controllers { get; } = AppDomain.CurrentDomain.GetAssemblies()
             .SelectMany(c => c.GetTypes())
             .Where(c => !c.IsAbstract && baseController.IsAssignableFrom(c))
             .ToList();
 
-    public static BotControllerRoutes MakeRoutes()
+    public static BotControllerRoutes MakeRoutes(RouteSkipFactoryDelegate skipFactory)
     {
+        var stateControllerType = typeof(BotControllerState);
+        var hasStateController = _controllers.Any(c => {
+            return stateControllerType.IsAssignableFrom(c);
+        });
+
         var keys = _controllers
             .Select(c => c.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                .Select(s => (templ: GetTemplate(s), m: s))
+                .Select(s => (templ: GetTemplates(s), m: s))
+                .SelectMany(s => s.templ.Select(f => (templ: f, m: s.m)))
                 .Where(s => s.templ != null)
-                .Select(s => (templ: s.templ!, m: s.m)))
+                .Select(s => (templ: s.templ!, m: new RouteInfo<string>(s.m, skipFactory(hasStateController, s.m)))))
 
             .SelectMany(c => c)
             .ToList();
@@ -24,16 +34,11 @@ public class BotControllerFactory
         return new BotControllerRoutes(keys);
     }
 
-    private static string? GetTemplate(MethodInfo method)
+    private static IEnumerable<string> GetTemplates(MethodInfo method)
     {
-        var route = method.GetCustomAttribute<ActionAttribute>();
-        if(route != null)
-        {
-            return route.Template ?? GetAnonymousName(method);
-        }
-
-        return null;
-
+        var routes = method.GetCustomAttributes<ActionAttribute>();
+        return routes.Select(route => route.Template ?? GetAnonymousName(method)); //TODO: Check multiple attributes
+        
         static string GetAnonymousName(MethodInfo m)
         {
             var signature = $"{m.DeclaringType!.FullName}_{m}";

@@ -3,7 +3,7 @@
 namespace Deployf.Botf.ScheduleExample;
 
 /// Filling part of slots
-partial class SlotController : BotControllerBase
+partial class SlotController : BotController
 {
     [Action]
     void FillCalendar([State] FillState state)

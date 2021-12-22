@@ -38,8 +38,8 @@ public class BotControllersMiddleware : IUpdateHandler
             var key = ExtractGroupKey(context, entries[0]);
 
             var arguments = entries.Skip(1).ToArray();
-
-            if (_map.TryGetValue(key, arguments, out var value) && value != null)
+            var value = await _map.GetValue(key, arguments, context);
+            if (value != null)
             {
                 _log.LogDebug("Found bot action {Controller}.{Method}. Payload: {Payload} Arguments: {@Args}",
                     value.DeclaringType!.Name,
@@ -47,7 +47,7 @@ public class BotControllersMiddleware : IUpdateHandler
                     payload,
                     arguments);
 
-                var controller = (BotControllerBase)context.Services.GetRequiredService(value.DeclaringType);
+                var controller = (BotController)context.Services.GetRequiredService(value.DeclaringType);
                 controller.Init(context, cancellationToken);
                 context.Items["args"] = arguments;
                 context.Items["action"] = value;

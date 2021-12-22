@@ -18,20 +18,20 @@ public class BotControllersInvoker
 
     public async ValueTask Invoke(IUpdateContext ctx, CancellationToken token, MethodInfo method, params object[] args)
     {
-        var controller = (BotControllerBase)_services.GetRequiredService(method.DeclaringType!);
+        var controller = (BotController)_services.GetRequiredService(method.DeclaringType!);
         controller.Init(ctx, token);
         await InvokeInternal(controller, method, args, ctx);
     }
 
     public async ValueTask<bool> Invoke(IUpdateContext context)
     {
-        var isPresented = context.Items.TryGetValue("controller", out var value) && value is BotControllerBase;
+        var isPresented = context.Items.TryGetValue("controller", out var value) && value is BotController;
         if (!isPresented)
         {
             return false;
         }
 
-        var controller = (BotControllerBase)value!;
+        var controller = (BotController)value!;
 
         var method = (MethodInfo)context.Items["action"];
         var args = (object[])context.Items["args"];
@@ -40,7 +40,7 @@ public class BotControllersInvoker
         return true;
     }
 
-    private async ValueTask<object?> InvokeInternal(BotControllerBase controller, MethodInfo method, object[] args, IUpdateContext ctx)
+    private async ValueTask<object?> InvokeInternal(BotController controller, MethodInfo method, object[] args, IUpdateContext ctx)
     {
         var typedParams = await _binder.Bind(method, args, ctx);
 

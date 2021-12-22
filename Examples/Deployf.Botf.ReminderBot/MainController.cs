@@ -3,7 +3,7 @@ using Telegram.Bot.Types.Enums;
 
 namespace Deployf.Botf.ScheduleExample;
 
-class MainController : BotControllerBase
+class MainController : BotController
 {
     readonly TableQuery<User> _users;
     readonly SQLiteConnection _db;

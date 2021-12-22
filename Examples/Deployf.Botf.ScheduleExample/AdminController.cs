@@ -1,7 +1,7 @@
 ﻿using Deployf.Botf;
 using SQLite;
 
-class AdminController : BotControllerBase
+class AdminController : BotController
 {
     readonly TableQuery<User> _users;
     readonly SQLiteConnection _db;

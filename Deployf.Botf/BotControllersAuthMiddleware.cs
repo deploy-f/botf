@@ -16,7 +16,7 @@ public class BotControllersAuthMiddleware : IUpdateHandler
 
     public async Task HandleAsync(IUpdateContext context, UpdateDelegate next, CancellationToken cancellationToken)
     {
-        if(context.Items.TryGetValue("controller", out var value) && value is BotControllerBase controller)
+        if(context.Items.TryGetValue("controller", out var value) && value is BotController controller)
         {
             var method = (MethodInfo)context.Items["action"];
             var user = await GetUser(context);
@@ -27,7 +27,7 @@ public class BotControllersAuthMiddleware : IUpdateHandler
         await next(context, cancellationToken);
     }
 
-    void AuthMethod(BotControllerBase controller, MethodInfo method)
+    void AuthMethod(BotController controller, MethodInfo method)
     {
         var policy = method.GetAuthPolicy()?.Trim();
 

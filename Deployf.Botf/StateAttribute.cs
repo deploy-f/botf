@@ -13,7 +13,7 @@ public sealed class StateAttribute : Attribute
     }
 }
 
-[AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
 public sealed class ActionAttribute : Attribute
 {
     public readonly string? Template;
@@ -73,5 +73,6 @@ public enum Handle
     /// <summary>
     /// Execute action before message go to routing and whole the botf
     /// </summary>
-    BeforeAll
+    BeforeAll,
+    ClearState
 }

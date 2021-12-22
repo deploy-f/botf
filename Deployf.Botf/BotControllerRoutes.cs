@@ -1,6 +1,12 @@
 ﻿using System.Reflection;
+using Telegram.Bot.Framework.Abstractions;
 
 namespace Deployf.Botf;
+
+public record RouteInfo<T>(
+    MethodInfo Method,
+    RouteSkipDelegate? Skip
+);
 
 public abstract class BotControllerMap<T> : Dictionary<T, MethodInfo> where T : notnull
 {
@@ -16,23 +22,28 @@ public abstract class BotControllerMap<T> : Dictionary<T, MethodInfo> where T : 
     }
 }
 
-public abstract class BotControllerListMap<T> : List<(T command, MethodInfo action)> where T : notnull
+public abstract class BotControllerListMap<T> : List<(T command, RouteInfo<T> info)> where T : notnull
 {
-    public BotControllerListMap(IList<(T, MethodInfo)> data) : base(data)
+    protected readonly ILookup<T, RouteInfo<T>> _lookup;
+
+    public BotControllerListMap(IList<(T command, RouteInfo<T> info)> data) : base(data)
     {
+        _lookup = data.ToLookup(c => c.command, c => c.info);
     }
 
     public IEnumerable<Type> ControllerTypes()
     {
         return this
-            .Select(c => c.action.DeclaringType!)
+            .Select(c => c.info.Method.DeclaringType!)
             .Distinct();
     }
 }
 
 public class BotControllerRoutes : BotControllerListMap<string>
 {
-    public BotControllerRoutes(IList<(string command, MethodInfo action)> data) :base(data)
+    static readonly Type STATE_TYPE = typeof(BotControllerState);
+
+    public BotControllerRoutes(IList<(string command, RouteInfo<string> action)> data) :base(data)
     {
     }
 
@@ -40,31 +51,44 @@ public class BotControllerRoutes : BotControllerListMap<string>
     {
         foreach(var item in this)
         {
-            if(item.action.Name == action
-                && item.action.DeclaringType!.Name == controller
-                && args.Length == item.action.GetParameters().Length) //TODO: check the argument types
+            if(item.info.Method.Name == action
+                && item.info.Method.DeclaringType!.Name == controller
+                && args.Length == item.info.Method.GetParameters().Length) //TODO: check the argument types
             {
-                return (item.command, item.action);
+                return (item.command, item.info.Method);
             }
         }
 
         return (null, null);
     }
 
-    public bool TryGetValue(string key, string[] arguments, out MethodInfo method)
+    public async ValueTask<MethodInfo?> GetValue(string key, string[] arguments, IUpdateContext context)
     {
-        foreach (var item in this)
+        if(!_lookup.Contains(key))
         {
-            if (item.command == key
-                && arguments.Length == item.action.GetParameters().Length) //TODO: check the argument types
-            {
-                method = item.action;
-                return true;
-            }
+            return null;
         }
 
-        method = null!;
-        return false;
+        var targets = _lookup[key];
+        foreach (var item in targets)
+        {
+            if(item.Skip != null && await item.Skip(key, item, context))
+            {
+                continue;
+            }
+
+            if (arguments.Length == item.Method.GetParameters().Length) //TODO: check the argument types
+            {
+                return item.Method;
+            }
+        }
+        return null;
+    }
+
+    public Type? GetStateType(Type stateType)
+    {
+        return this.Where(c => STATE_TYPE.IsAssignableFrom(c.info.Method.DeclaringType))
+            .FirstOrDefault(c => c.info!.Method!.DeclaringType!.BaseType!.GenericTypeArguments[0] == stateType).info?.Method?.DeclaringType;
     }
 }
 

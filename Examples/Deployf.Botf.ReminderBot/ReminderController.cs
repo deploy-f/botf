@@ -6,7 +6,7 @@ namespace Deployf.Botf.ScheduleExample;
 /// <summary>
 /// Entypoint to reminder commands and management
 /// </summary>
-public class ReminderController : BotControllerBase
+public class ReminderController : BotController
 {
     readonly TableQuery<Reminder> _reminders;
     readonly TableQuery<User> _users;

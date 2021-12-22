@@ -1,6 +1,6 @@
 ﻿namespace Deployf.Botf;
 
-public class BotfProgram : BotControllerBase
+public class BotfProgram : BotController
 {
     public static void StartBot(
         string[] args,

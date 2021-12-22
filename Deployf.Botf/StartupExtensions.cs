@@ -41,10 +41,10 @@ public static class StartupExtensions
         var bot = app.ApplicationServices.GetRequiredService<BotfBot>();
         var routes = app.ApplicationServices.GetRequiredService<BotControllerRoutes>();
         var commands = routes.Where(c => c.command.StartsWith("/"))
-            .Where(c => string.IsNullOrEmpty(c.action.GetAuthPolicy()))
-            .Where(c => c.action.GetParameters().Length == 0)
-            .Where(c => !string.IsNullOrEmpty(c.action.GetActionDescription()))
-            .Select(c => new BotCommand { Command = c.command, Description = c.action.GetActionDescription()! })
+            .Where(c => string.IsNullOrEmpty(c.info.Method.GetAuthPolicy()))
+            .Where(c => c.info.Method.GetParameters().Length == 0)
+            .Where(c => !string.IsNullOrEmpty(c.info.Method.GetActionDescription()))
+            .Select(c => new BotCommand { Command = c.command, Description = c.info.Method.GetActionDescription()! })
             .ToList();
 
         bot.Client.SetMyCommandsAsync(commands)
@@ -58,7 +58,8 @@ public static class StartupExtensions
 
     public static IServiceCollection AddBotf(this IServiceCollection services, BotfOptions options)
     {
-        var routes = BotControllerFactory.MakeRoutes();
+        var routes = BotControllerFactory.MakeRoutes(RouteStateSkipFunction.SkipFunctionFactory);
+
         var states = BotControllerFactory.MakeStates();
         var handlers = BotControllerFactory.MakeHandlers();
         var controllerTypes = routes.ControllerTypes()
@@ -123,10 +124,10 @@ public static class StartupExtensions
             Timeout = 100,
             AllowedUpdates = new[]
             {
-                    UpdateType.Message,
-                    UpdateType.CallbackQuery,
-                    UpdateType.EditedMessage
-                }
+                UpdateType.Message,
+                UpdateType.CallbackQuery,
+                UpdateType.EditedMessage
+            }
         };
 
         Task.Run(LoongPooling, cancellationToken)

@@ -38,7 +38,7 @@ public class BotControllersFSMMiddleware : IUpdateHandler
                     value.Name,
                     state);
 
-                var controller = (BotControllerBase)context.Services.GetRequiredService(value.DeclaringType);
+                var controller = (BotController)context.Services.GetRequiredService(value.DeclaringType);
                 controller.Init(context, cancellationToken);
                 context.Items["args"] = new object[] { state };
                 context.Items["action"] = value;

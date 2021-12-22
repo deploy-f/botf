@@ -6,7 +6,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Deployf.Botf;
 
-public abstract class BotControllerBase
+public abstract class BotController
 {
     public UserClaims User { get; set; } = new UserClaims();
     protected long ChatId { get; private set; }
@@ -57,7 +57,69 @@ public abstract class BotControllerBase
         return Store!.Get(FromId, name, def);
     }
 
-    public async Task Call<T>(Func<T, Task> method) where T : BotControllerBase
+    protected async ValueTask GlobalState(object? state)
+    {
+        if(state == null)
+        {
+            if(await Store!.Contain(FromId, Consts.GLOBAL_STATE))
+            {
+                var oldState = await Store!.Get(FromId, Consts.GLOBAL_STATE, null);
+                if (oldState != null)
+                {
+                    await Call(true, oldState);
+                }
+            }
+            await Store!.Remove(FromId, Consts.GLOBAL_STATE);
+            await CallClear();
+        }
+        else
+        {
+            if (await Store!.Contain(FromId, Consts.GLOBAL_STATE))
+            {
+                var oldState = await Store!.Get(FromId, Consts.GLOBAL_STATE, null);
+                if (oldState != null)
+                {
+                    await Call(true, oldState);
+                }
+            }
+            await Store!.Set(FromId, Consts.GLOBAL_STATE, state);
+            await Call(false, state);
+        }
+
+        async ValueTask Call(bool leave, object oldState)
+        {
+            var routes = Context!.Services.GetRequiredService<BotControllerRoutes>();
+            var controllerType = routes.GetStateType(oldState.GetType());
+            if (controllerType != null)
+            {
+                var controller = (BotControllerState)Context!.Services.GetRequiredService(controllerType);
+                controller.Init(Context, CancelToken);
+                controller.User = User;
+                await controller.OnBeforeCall();
+                if (leave)
+                {
+                    await controller.OnLeave();
+                }
+                else
+                {
+                    await controller.OnEnter();
+                }
+                await controller.OnAfterCall();
+            }
+        }
+
+        async ValueTask CallClear()
+        {
+            var handlers = Context!.Services.GetRequiredService<BotControllerHandlers>();
+            if(handlers.TryGetValue(Handle.ClearState, out var method))
+            {
+                var invoker = Context!.Services.GetRequiredService<BotControllersInvoker>();
+                await invoker.Invoke(Context, CancelToken, method);
+            }
+        }
+    }
+
+    public async Task Call<T>(Func<T, Task> method) where T : BotController
     {
         var controller = Context!.Services.GetRequiredService<T>();
         controller.Init(Context, CancelToken);
@@ -69,7 +131,7 @@ public abstract class BotControllerBase
         await controller.OnAfterCall();
     }
 
-    public async Task Call<T>(Action<T> method) where T : BotControllerBase
+    public async Task Call<T>(Action<T> method) where T : BotController
     {
         var controller = Context!.Services.GetRequiredService<T>();
         controller.Init(Context, CancelToken);
@@ -102,7 +164,7 @@ public abstract class BotControllerBase
     #region sending
     public async Task SendOrUpdate()
     {
-        if (Context!.Update.Type == UpdateType.CallbackQuery)
+        if (Context!.Update.Type == UpdateType.CallbackQuery && Message.Markup is not ReplyKeyboardMarkup)
         {
             await Update();
         }
@@ -231,6 +293,31 @@ public abstract class BotControllerBase
         Message.Button(button);
     }
 
+    public void MakeKButtonRow()
+    {
+        Message.MakeKButtonRow();
+    }
+
+    public void RowKButton(string text)
+    {
+        Message.RowKButton(text);
+    }
+
+    public void RowKButton(KeyboardButton button)
+    {
+        Message.RowKButton(button);
+    }
+
+    public void KButton(string text)
+    {
+        Message.KButton(text);
+    }
+
+    public void KButton(KeyboardButton button)
+    {
+        Message.KButton(button);
+    }
+
     public void Pager<T>(Paging<T> page, Func<T, (string text, string data)> row, string format, int buttonsInRow = 2)
     {
         Message.Pager(page, row, format, buttonsInRow);
@@ -265,42 +352,42 @@ public abstract class BotControllerBase
         return FPath(noArgs.Method.DeclaringType!.Name, noArgs.Method.Name);
     }
 
-    public string Q<T>(Expression<Func<T, Action>> noArgs) where T : BotControllerBase
+    public string Q<T>(Expression<Func<T, Action>> noArgs) where T : BotController
     {
         dynamic param = noArgs;
         var name = param.Body.Operand.Object.Value.Name;
         return FPath(typeof(T).Name, name);
     }
 
-    public string Q<T>(Expression<Func<T, Func<Task>>> noArgs) where T : BotControllerBase
+    public string Q<T>(Expression<Func<T, Func<Task>>> noArgs) where T : BotController
     {
         dynamic param = noArgs;
         var name = param.Body.Operand.Object.Value.Name;
         return FPath(typeof(T).Name, name);
     }
 
-    public string Q<T>(Expression<Func<T, Func<ValueTask>>> noArgs) where T : BotControllerBase
+    public string Q<T>(Expression<Func<T, Func<ValueTask>>> noArgs) where T : BotController
     {
         dynamic param = noArgs;
         var name = param.Body.Operand.Object.Value.Name;
         return FPath(typeof(T).Name, name);
     }
 
-    public string Q<T, A1>(Expression<Func<T, Action<A1>>> oneArg, object arg1) where T : BotControllerBase
+    public string Q<T, A1>(Expression<Func<T, Action<A1>>> oneArg, object arg1) where T : BotController
     {
         dynamic param = oneArg;
         var name = param.Body.Operand.Object.Value.Name;
         return FPath(typeof(T).Name, name, arg1);
     }
 
-    public string Q<T, A1>(Expression<Func<T, Func<A1, Task>>> oneArg, object arg1) where T : BotControllerBase
+    public string Q<T, A1>(Expression<Func<T, Func<A1, Task>>> oneArg, object arg1) where T : BotController
     {
         dynamic param = oneArg;
         var name = param.Body.Operand.Object.Value.Name;
         return FPath(typeof(T).Name, name, arg1);
     }
 
-    public string Q<T, A1>(Expression<Func<T, Func<A1, ValueTask>>> oneArg, object arg1) where T : BotControllerBase
+    public string Q<T, A1>(Expression<Func<T, Func<A1, ValueTask>>> oneArg, object arg1) where T : BotController
     {
         dynamic param = oneArg;
         var name = param.Body.Operand.Object.Value.Name;

@@ -1,10 +1,10 @@
 ﻿{
   "profiles": {
-    "Deployf.Botf.HelloExample": {
+    "Deployf.Botf.GlobalStateMachineExample": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": false,
-      "applicationUrl": "http://localhost:5281",
+      "applicationUrl": "http://localhost:5237",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
