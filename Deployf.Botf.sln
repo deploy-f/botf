@@ -24,7 +24,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deployf.Botf.CalendarKeyboa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deployf.Botf.ReminderBot", "Examples\Deployf.Botf.ReminderBot\Deployf.Botf.ReminderBot.csproj", "{DF8A99F9-EF40-4319-BEDE-EAC5447FD62C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deployf.Botf.GlobalStateMachineExample", "Examples\Deployf.Botf.GlobalStateMachineExample\Deployf.Botf.GlobalStateMachineExample.csproj", "{D3552144-80A0-4C3B-A0ED-A4A03691466B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deployf.Botf.GlobalStateMachineExample", "Examples\Deployf.Botf.GlobalStateMachineExample\Deployf.Botf.GlobalStateMachineExample.csproj", "{D3552144-80A0-4C3B-A0ED-A4A03691466B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deployf.Botf.ChainedExample", "Examples\Deployf.Botf.ChainedExample\Deployf.Botf.ChainedExample.csproj", "{7E6BE982-6DCF-4CCB-AF7E-80CD5F90ED00}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -64,6 +66,10 @@ Global
 		{D3552144-80A0-4C3B-A0ED-A4A03691466B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D3552144-80A0-4C3B-A0ED-A4A03691466B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D3552144-80A0-4C3B-A0ED-A4A03691466B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E6BE982-6DCF-4CCB-AF7E-80CD5F90ED00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E6BE982-6DCF-4CCB-AF7E-80CD5F90ED00}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E6BE982-6DCF-4CCB-AF7E-80CD5F90ED00}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E6BE982-6DCF-4CCB-AF7E-80CD5F90ED00}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -19,21 +19,24 @@ public static class UpdateContextExtensions
     {
         return context.Update.Message?.Chat.Id
                ?? context.Update.EditedMessage?.Chat.Id
-               ?? context.Update.CallbackQuery?.Message?.Chat.Id;
+               ?? context.Update.CallbackQuery?.Message?.Chat.Id
+               ?? context.Update.InlineQuery?.From.Id;
     }
 
     public static long? GetSafeUserId(this IUpdateContext context)
     {
         return context.Update.Message?.From?.Id
                ?? context.Update.EditedMessage?.From?.Id
-               ?? context.Update.CallbackQuery?.From?.Id;
+               ?? context.Update.CallbackQuery?.From?.Id
+               ?? context.Update.InlineQuery?.From.Id;
     }
 
     public static long UserId(this IUpdateContext context)
     {
         var value = context.Update.Message?.From?.Id
                ?? context.Update.EditedMessage?.From?.Id
-               ?? context.Update.CallbackQuery?.From?.Id;
+               ?? context.Update.CallbackQuery?.From?.Id
+               ?? context.Update.InlineQuery?.From?.Id;
 
         return value!.Value;
     }
@@ -58,7 +61,8 @@ public static class UpdateContextExtensions
     public static string? GetSafeTextPayload(this IUpdateContext context)
     {
         return context.Update.Message?.Text
-               ?? context.Update.CallbackQuery?.Data;
+               ?? context.Update.CallbackQuery?.Data
+               ?? context.Update.InlineQuery?.Query;
     }
 
     public static CallbackQuery GetCallbackQuery(this IUpdateContext context)

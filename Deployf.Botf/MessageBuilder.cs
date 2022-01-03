@@ -157,7 +157,7 @@ public class MessageBuilder
         }
 
         Keyboard!.Last().Add(button);
-        Markup = new ReplyKeyboardMarkup(Keyboard!.Where(c => c.Count > 0));
+        Markup = new ReplyKeyboardMarkup(Keyboard!.Where(c => c.Count > 0)) { ResizeKeyboard = true };
         IsDirty = true;
         return this;
     }

@@ -34,9 +34,15 @@ public abstract class BotController
         Message = new MessageBuilder();
     }
 
+    #region state management
     protected ValueTask State(object state)
     {
         return Store!.Set(FromId, BotControllersFSMMiddleware.STATE_KEY, state);
+    }
+
+    protected ValueTask ClearState()
+    {
+        return Store!.Remove(FromId, BotControllersFSMMiddleware.STATE_KEY);
     }
 
     protected ValueTask AState<T>(T state, string? name = null) where T : notnull
@@ -118,7 +124,9 @@ public abstract class BotController
             }
         }
     }
+    #endregion
 
+    #region misc
     public async Task Call<T>(Func<T, Task> method) where T : BotController
     {
         var controller = Context!.Services.GetRequiredService<T>();
@@ -160,6 +168,7 @@ public abstract class BotController
             await SendOrUpdate();
         }
     }
+    #endregion
 
     #region sending
     public async Task SendOrUpdate()
@@ -184,6 +193,7 @@ public abstract class BotController
             replyMarkup: Message.Markup,
             cancellationToken: CancelToken,
             replyToMessageId: Message.ReplyToMessageId);
+        ClearMessage();
     }
 
     public async Task UpdateMarkup(InlineKeyboardMarkup markup)
@@ -207,11 +217,7 @@ public abstract class BotController
             replyMarkup: markup ?? Message.Markup as InlineKeyboardMarkup,
             cancellationToken: CancelToken
         );
-    }
-
-    protected async Task SendHtml(string text)
-    {
-        await Send(text, ParseMode.Html);
+        ClearMessage();
     }
 
     protected async Task Send(string text)
@@ -232,16 +238,6 @@ public abstract class BotController
         if (text != null)
         {
             await Send(text);
-        }
-    }
-
-    public async Task SendHtml()
-    {
-        Message.SetParseMode(ParseMode.Html);
-        var text = Message.Message;
-        if (text != null)
-        {
-            await SendHtml(text);
         }
     }
     #endregion
@@ -333,6 +329,11 @@ public abstract class BotController
         {
             Message.ReplyTo(messageId.GetValueOrDefault());
         }
+    }
+
+    public void ClearMessage()
+    {
+        Message = new MessageBuilder();
     }
     #endregion
 
@@ -430,5 +431,45 @@ public abstract class BotController
         var part2 = string.Join(splitter, parts);
         return $"{hit.template}{splitter}{part2}".TrimEnd('/').TrimEnd();
     }
+    #endregion
+
+    #region chaining
+
+    public async Task<IUpdateContext> AwaitNextUpdate()
+    {
+        var store = Context.Services.GetRequiredService<ChainStorage>();
+        var tcs = new TaskCompletionSource<IUpdateContext>();
+        store.Set(ChatId, new (tcs));
+        return await tcs.Task;
+    }
+
+    public async Task<string> AwaitText()
+    {
+        while (true)
+        {
+            var update = await AwaitNextUpdate();
+            if (update.Update.Type != UpdateType.Message)
+            {
+                continue;
+            }
+
+            return update.GetSafeTextPayload()!;
+        }
+    }
+
+    public async Task<string> AwaitQuery()
+    {
+        while (true)
+        {
+            var update = await AwaitNextUpdate();
+            if (update.Update.Type != UpdateType.CallbackQuery)
+            {
+                continue;
+            }
+
+            return update.GetSafeTextPayload()!;
+        }
+    }
+
     #endregion
 }

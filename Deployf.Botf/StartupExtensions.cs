@@ -18,6 +18,7 @@ public static class StartupExtensions
 
         builder
             .Use<BotControllersExceptionMiddleware>()
+            .Use<BotControllersChainMiddleware>()
             .Use<BotControllersBeforeAllMiddleware>()
             .Use<BotControllersMiddleware>()
             .Use<BotControllersFSMMiddleware>()
@@ -77,7 +78,9 @@ public static class StartupExtensions
         services.AddSingleton(handlers);
         services.AddSingleton<PagingService>();
         services.AddSingleton<IKeyValueStorage, InMemoryKeyValueStorage>();
+        services.AddSingleton<ChainStorage>();
         services.AddScoped<BotControllersMiddleware>();
+        services.AddScoped<BotControllersChainMiddleware>();
         services.AddScoped<BotControllersFSMMiddleware>();
         services.AddScoped<BotControllersAuthMiddleware>();
         services.AddScoped<BotControllersInvokeMiddleware>();
@@ -122,12 +125,7 @@ public static class StartupExtensions
         {
             Offset = 0,
             Timeout = 100,
-            AllowedUpdates = new[]
-            {
-                UpdateType.Message,
-                UpdateType.CallbackQuery,
-                UpdateType.EditedMessage
-            }
+            AllowedUpdates = new UpdateType[0]
         };
 
         Task.Run(LoongPooling, cancellationToken)
