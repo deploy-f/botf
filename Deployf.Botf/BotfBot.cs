@@ -7,7 +7,7 @@ public class BotfBot : BotBase
 {
     public readonly BotfOptions Options;
 
-    public BotfBot(BotfOptions options) : base(options.Username, new TelegramBotClient(options.Token!))
+    public BotfBot(BotfOptions options) : base(options.Username, new TelegramBotClient(options.Token!, baseUrl: options.ApiBaseUrl))
     {
         Options = options;
     }
