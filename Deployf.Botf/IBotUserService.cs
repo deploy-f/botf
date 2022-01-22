@@ -24,6 +24,6 @@ public class BotUserService
         {
             return await _userService.GetUserIdWithRoles(tgUserId);
         }
-        return (null, null); ;
+        return (null, null);
     }
 }

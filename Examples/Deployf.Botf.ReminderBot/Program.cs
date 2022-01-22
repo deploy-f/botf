@@ -3,8 +3,6 @@ using Hangfire;
 using Hangfire.Storage.SQLite;
 using SQLite;
 
-BackgroundJobServer? hangfireServer = null;
-
 BotfProgram.StartBot(args, onConfigure: (svc, cfg) =>
 {
     var db = new SQLiteConnection("db.sqlite");
@@ -29,8 +27,6 @@ BotfProgram.StartBot(args, onConfigure: (svc, cfg) =>
 {
     app.UseHangfireDashboard();
 });
-
-hangfireServer!.Dispose();
 
 class HangfireActivator : JobActivator
 {

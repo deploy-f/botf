@@ -24,6 +24,7 @@ public class BotfProgram : BotController
 
         var botOptions = builder.Configuration.GetSection("bot").Get<BotfOptions>();
         builder.Services.AddBotf(botOptions);
+        builder.Services.AddHttpClient();
 
         onConfigure?.Invoke(builder.Services, builder.Configuration);
 

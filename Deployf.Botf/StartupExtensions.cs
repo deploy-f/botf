@@ -70,15 +70,17 @@ public static class StartupExtensions
 
         foreach (var type in controllerTypes)
         {
-            services.AddTransient(type);
+            services.AddScoped(type);
         }
 
         services.AddSingleton(routes);
         services.AddSingleton(states);
         services.AddSingleton(handlers);
         services.AddSingleton<PagingService>();
+
         services.AddSingleton<IKeyValueStorage, InMemoryKeyValueStorage>();
         services.AddSingleton<ChainStorage>();
+
         services.AddScoped<BotControllersMiddleware>();
         services.AddScoped<BotControllersChainMiddleware>();
         services.AddScoped<BotControllersFSMMiddleware>();
@@ -88,11 +90,14 @@ public static class StartupExtensions
         services.AddScoped<BotControllersUnknownMiddleware>();
         services.AddScoped<BotControllersBeforeAllMiddleware>();
         services.AddScoped<BotControllersInvoker>();
+
         services.AddScoped<IBotContextAccessor, BotContextAccessor>();
-        services.AddSingleton<BotUserService>();
+
+        services.AddScoped<BotUserService>();
+
         services.AddTransient<BotfBot>();
         services.AddSingleton(options);
-        services.AddTransient<HttpClient>();
+
         services.AddTransient(ctx => ctx.GetRequiredService<BotfBot>().Client);
         services.AddTransient<MessageSender>();
 

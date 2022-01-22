@@ -11,9 +11,3 @@ class Program : BotfProgram
         await Send(Context.GetSafeTextPayload()!);
     }
 }
-
-record State1;
-
-class State1Controller : BotControllerState<State1>
-{
-}
