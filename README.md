@@ -1,9 +1,9 @@
 ﻿# BotF
-[![Nuget](https://img.shields.io/nuget/v/Deployf.Botf)](https://www.nuget.org/packages/Deployf.Botf) [![GitHub](https://img.shields.io/github/license/deploy-f/botf)](https://github.com/deploy-f/botf/blob/master/LICENSE) [![CI](https://github.com/deploy-f/botf/actions/workflows/dotnet.yml/badge.svg)](https://github.com/deploy-f/botf/actions/workflows/dotnet.yml)  
+[![Nuget](https://img.shields.io/nuget/v/Deployf.Botf)](https://www.nuget.org/packages/Deployf.Botf) [![GitHub](https://img.shields.io/github/license/deploy-f/botf)](https://github.com/deploy-f/botf/blob/master/LICENSE) [![CI](https://github.com/deploy-f/botf/actions/workflows/dotnet.yml/badge.svg)](https://github.com/deploy-f/botf/actions/workflows/dotnet.yml) [![Telegram Group](https://img.shields.io/endpoint?url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fbotf_community)](https://t.me/botf_community)  
 
 Make beautiful and clear telegram bots with the asp.net-like architecture!
 
-BotF have next features:
+BotF has next features:
 
 * long pooling and webhook mode without any changes in the code
 * very convinient way to work with commands and reply buttons
@@ -18,7 +18,9 @@ BotF have next features:
 
 ## Documentaion
 
- Visit to [our wiki](https://github.com/deploy-f/botf/wiki) to read botf documentation
+ (Under development) Visit to [our wiki](https://github.com/deploy-f/botf/wiki) to read botf documentation
+
+ Good video on youtube https://www.youtube.com/watch?v=hieLnm9wO6s
 
 ## Install
 
