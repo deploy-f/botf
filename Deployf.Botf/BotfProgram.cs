@@ -6,7 +6,8 @@ public class BotfProgram : BotController
         string[] args,
         bool skipHello = false,
         Action<IServiceCollection, IConfiguration>? onConfigure = null,
-        Action<IApplicationBuilder, IConfiguration>? onRun = null)
+        Action<IApplicationBuilder, IConfiguration>? onRun = null,
+        BotfOptions options = null)
     {
         if (!skipHello)
         {
@@ -22,7 +23,19 @@ public class BotfProgram : BotController
 
         var builder = WebApplication.CreateBuilder(args);
 
-        var botOptions = builder.Configuration.GetSection("bot").Get<BotfOptions>();
+        var botOptions = options;
+
+        if(botOptions == null && builder.Configuration["bot"] != null)
+        {
+            botOptions = builder.Configuration.GetSection("bot").Get<BotfOptions>();
+        }
+
+        var connectionString = builder.Configuration["botf"];
+        if (botOptions == null && connectionString != null)
+        {
+            botOptions = ConnectionString.Parse(connectionString);
+        }
+
         builder.Services.AddBotf(botOptions);
         builder.Services.AddHttpClient();
 

@@ -69,7 +69,7 @@ class Program : BotfProgram
         PushL("You know.. it's very hard to recognize your command!");
         PushL("Please, write a correct text. Or use /start command");
 
-        // And finally, send buffered message
+        // And finally send buffered message
         await Send();
     }
 }
@@ -79,11 +79,7 @@ And replace content of `appsettings.json` with your bot username and token:
 
 ```
 {
-  "bot": {
-    "Token": "123456778990:YourToken",
-    "Username": "username_bot",
-    "AutoSend": true
-  }
+  "botf": "123456778990:YourToken"
 }
 ```
 

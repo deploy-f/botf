@@ -16,7 +16,7 @@ public class BotfOptions
     }
 
     public string? WebhookUrl { get; set; }
-    public bool AutoSend { get; set; }
+    public bool AutoSend { get; set; } = true;
     public bool HandleOnlyMentionedInGroups { get; set; }
     public string ApiBaseUrl { get; set; }
 

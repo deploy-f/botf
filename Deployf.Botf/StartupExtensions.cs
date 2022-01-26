@@ -57,8 +57,25 @@ public static class StartupExtensions
         return app;
     }
 
+    public static IServiceCollection AddBotf(this IServiceCollection services, string connectionString)
+    {
+        var options = ConnectionString.Parse(connectionString);
+        services.AddBotf(options);
+        return services;
+    }
+
     public static IServiceCollection AddBotf(this IServiceCollection services, BotfOptions options)
     {
+        if(string.IsNullOrEmpty(options.Username))
+        {
+            var telegramClient = new TelegramBotClient(options.Token, baseUrl: options.ApiBaseUrl);
+            var botUser = telegramClient.GetMeAsync()
+                .ConfigureAwait(false)
+                .GetAwaiter()
+                .GetResult();
+            options.Username = botUser.Username;
+        }
+
         var routes = BotControllerFactory.MakeRoutes(RouteStateSkipFunction.SkipFunctionFactory);
 
         var states = BotControllerFactory.MakeStates();
