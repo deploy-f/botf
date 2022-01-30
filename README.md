@@ -1,12 +1,12 @@
 ﻿# BotF
 [![Nuget](https://img.shields.io/nuget/v/Deployf.Botf)](https://www.nuget.org/packages/Deployf.Botf) [![GitHub](https://img.shields.io/github/license/deploy-f/botf)](https://github.com/deploy-f/botf/blob/master/LICENSE) [![CI](https://github.com/deploy-f/botf/actions/workflows/dotnet.yml/badge.svg)](https://github.com/deploy-f/botf/actions/workflows/dotnet.yml) [![Telegram Group](https://img.shields.io/endpoint?url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fbotf_community)](https://t.me/botf_community)  
 
-Make beautiful and clear telegram bots with the asp.net-like architecture!
+🤘 Make beautiful and clear telegram bots with the asp.net-like architecture!
 
 BotF has next features:
 
 * long pooling and webhook mode without any changes in the code
-* very convinient way to work with commands and reply buttons
+* very convinient way to work with commands and reply/keyboard buttons
 * integrated pagination with buttons
 * authentication and role-based authorization
 * statemachine for complicated dialogs with users
@@ -16,11 +16,7 @@ BotF has next features:
 * auto sending
 * good performance
 
-## Documentaion
-
- (Under development) Visit to [our wiki](https://github.com/deploy-f/botf/wiki) to read botf documentation
-
- Good video on youtube https://www.youtube.com/watch?v=hieLnm9wO6s
+ There is a good video on youtube(in russian) https://www.youtube.com/watch?v=hieLnm9wO6s
 
 ## Install
 
@@ -42,10 +38,10 @@ class Program : BotfProgram
     // But in this case of starting of the bot, you should add a config section under "bot" key to appsettings.json
     public static void Main(string[] args) => StartBot(args);
 
-    // Action attribute mean that you mark async method `Start`
-    // as handler for user's text in message which equal to '/start' string.
+    // Action attribute mean that you mark method `Start`
+    // as handler for user's text in message which equal to '/start'.
     // You can name method as you want
-    // And also, second argument of Action's attribute is a description for telegram's menu for this action
+    // And also second argument of Action's attribute is a description for telegram's menu for this action
     [Action("/start", "start the bot")]
     public void Start()
     {
@@ -61,21 +57,18 @@ class Program : BotfProgram
 
     // Here we handle all unknown command or just text sent from user
     [On(Handle.Unknown)]
-    public async Task Unknown()
+    public void Unknown()
     {
         // Here, we use the so-called "buffering of sending message"
         // It means you dont need to construct all message in the string and send it once
         // You can use Push to just add the text to result message, or PushL - the same but with new line after the string.
         PushL("You know.. it's very hard to recognize your command!");
         PushL("Please, write a correct text. Or use /start command");
-
-        // And finally send buffered message
-        await Send();
     }
 }
 ```
 
-And replace content of `appsettings.json` with your bot username and token:
+And replace content of `appsettings.json` with your bot-token:
 
 ```
 {
@@ -84,10 +77,62 @@ And replace content of `appsettings.json` with your bot username and token:
 ```
 
 And that's it! Veeery easy, isn't?  
-Just run the program :)
+Just run the program.
 
 Other examples you can find in `/Examples` folder.
 
+## Documentation
+
+Here is a documentation for all features of BotF
+
+### Make the program
+
+You can go in two ways:
+1. Inherit from `BotfProgram` and call `StartBot(args)` to make simple bot only with message handliers
+2. Or construct asp.net web api application from scratch. Let's call it 'advanced method'
+
+#### `StartBot` method
+
+`StartBot` takes several parameters:
+
+
+#### Advanced method
+
+### Connection string
+
+### Handling the updates
+
+#### Actions
+
+#### Buttons
+
+### Sending the messages
+
+### Controllers
+
+### Message Builder
+
+### Authorization
+
+### Calendar
+
+### Pagging
+
+### Auto sending
+
+### Handling the special cases
+
+#### Unknown message
+
+#### Unauthorized
+
+#### Callbacks before and after all handlers
+
+#### Error handling
+
+### Chain mode
+
+
 ## Hosting
 
-After you develop your bot, you can deploy it to our hosting: [deploy-f.com](https://deploy-f.com)
+After you developed your bot, you can deploy it to our hosting: [deploy-f.com](https://deploy-f.com)
