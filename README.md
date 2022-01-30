@@ -93,12 +93,49 @@ You can go in two ways:
 
 #### `StartBot` method
 
-`StartBot` takes several parameters:
-
+Signature of method:
+```csharp
+void StartBot(
+     string[] args,
+     bool skipHello = false,
+     Action<IServiceCollection, IConfiguration>? onConfigure = null,
+     Action<IApplicationBuilder, IConfiguration>? onRun = null,
+     BotfOptions options = null
+)
+```
+* `args` - _required_ pass the args from `main` methods
+* `skipHello` - if you want to avoid hello message in console output so pass `true`
+* `onConfigure` - _optional_ calls to register your dependencies in internal DI Contaoner, second argument of delegate - asp.net configuration service
+* `onRun` - _optional_, calls to add the required middlewares in asp.net's pipeline 
+* `options`- _optional_, pass your custom configuration of bot if you need it
 
 #### Advanced method
 
+If you have a complex project written on asp.net core you can add BotF there just with 2 calls:
+1. Call `AddBotf` in `ConfigureServices` on di container in startup class
+2. Call `UseBotf` in `Configure` in startup class
+
+`AddBotf` takes botf options, you can construct it yourself or as result of the call `ConnectionString.Parse("connection_string_here")`:
+```csharp
+var botOptions = ConnectionString.Parse(builder.Configuration["botf"]);
+services.AddBotf(botOptions);
+```
+
 ### Connection string
+
+We use prety simple connection string to configure the framework. The format of this sthing is like:
+```
+yout_bot_token?key1=value1&key2=value2...
+```
+
+if you only need to pass the bot token, you can only specify it in the connection string.  
+
+You can configure next parameters:
+| Key | Description |
+|---|---|
+| `autosend` | Determines whether the mode is on or off  <br>  <br>`1` - enabled (default value)  <br>`0` - disabled |
+| `webhook` | Url to the webhook. If is not defined then will be used long pooling mode  <br>  <br>example: `https://awnfuql.ngrok.io/you_random_path_to_web_hook` |
+| `api` | Url to custom telegram api. Useful if you need to work through local bot api server |
 
 ### Handling the updates
 
