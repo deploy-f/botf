@@ -1,15 +1,10 @@
 ﻿namespace Deployf.Botf;
 
-public interface IBotUserService
-{
-    ValueTask<(string? id, string[]? roles)> GetUserIdWithRoles(long tgUserId);
-}
-
 public class BotUserService
 {
     readonly IBotUserService? _userService;
 
-    public BotUserService(IBotUserService userService)
+    public BotUserService(IBotUserService? userService)
     {
         _userService = userService;
     }

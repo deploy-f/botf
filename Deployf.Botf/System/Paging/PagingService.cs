@@ -1,6 +1,5 @@
 ﻿namespace Deployf.Botf;
 
-
 public class PagingService
 {
     public int PageDefaultCount = 15;
@@ -22,27 +21,4 @@ public class PagingService
         var resultCollection = collection.Skip(skiping).Take(taking);
         return new Paging<TResult>(count, pageParams.Count ?? PageDefaultCount, pageParams.Page ?? 0, resultCollection);
     }
-}
-
-
-public class Paging<TItem>
-{
-    public int Count { get; set; }
-    public int ItemsPerPage { get; set; }
-    public int PageNumber { get; set; }
-    public IEnumerable<TItem> Items { get; set; }
-
-    public Paging(int count, int itemsPerPage, int page, IEnumerable<TItem> items)
-    {
-        Count = count;
-        ItemsPerPage = itemsPerPage;
-        PageNumber = page;
-        Items = items;
-    }
-}
-
-public class PageFilter
-{
-    public int? Page { get; set; }
-    public int? Count { get; set; }
 }

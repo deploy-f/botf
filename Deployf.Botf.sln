@@ -18,15 +18,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deployf.Botf.ScheduleExample", "Examples\Deployf.Botf.ScheduleExample\Deployf.Botf.ScheduleExample.csproj", "{BFF978FE-1BDF-4689-9804-4061CE796789}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deployf.Botf.Tests", "Deployf.Botf.Tests\Deployf.Botf.Tests.csproj", "{DA11825C-ECB8-453C-9376-E8AD1FA875BD}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deployf.Botf.CalendarKeyboardExample", "Examples\Deployf.Botf.CalendarKeyboardExample\Deployf.Botf.CalendarKeyboardExample.csproj", "{11C5461F-E23A-444F-B0D7-224C09AC7127}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deployf.Botf.ReminderBot", "Examples\Deployf.Botf.ReminderBot\Deployf.Botf.ReminderBot.csproj", "{DF8A99F9-EF40-4319-BEDE-EAC5447FD62C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deployf.Botf.GlobalStateMachineExample", "Examples\Deployf.Botf.GlobalStateMachineExample\Deployf.Botf.GlobalStateMachineExample.csproj", "{D3552144-80A0-4C3B-A0ED-A4A03691466B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deployf.Botf.ChainedExample", "Examples\Deployf.Botf.ChainedExample\Deployf.Botf.ChainedExample.csproj", "{7E6BE982-6DCF-4CCB-AF7E-80CD5F90ED00}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deployf.Botf.ChainedExample", "Examples\Deployf.Botf.ChainedExample\Deployf.Botf.ChainedExample.csproj", "{7E6BE982-6DCF-4CCB-AF7E-80CD5F90ED00}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{90A07D9F-B417-4D28-BC58-5D987CB90430}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,10 +50,6 @@ Global
 		{BFF978FE-1BDF-4689-9804-4061CE796789}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BFF978FE-1BDF-4689-9804-4061CE796789}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BFF978FE-1BDF-4689-9804-4061CE796789}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DA11825C-ECB8-453C-9376-E8AD1FA875BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DA11825C-ECB8-453C-9376-E8AD1FA875BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DA11825C-ECB8-453C-9376-E8AD1FA875BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DA11825C-ECB8-453C-9376-E8AD1FA875BD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{11C5461F-E23A-444F-B0D7-224C09AC7127}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{11C5461F-E23A-444F-B0D7-224C09AC7127}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11C5461F-E23A-444F-B0D7-224C09AC7127}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -73,6 +69,15 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{47E35AD3-9A22-4E08-8ECA-F9FE5DD58859} = {90A07D9F-B417-4D28-BC58-5D987CB90430}
+		{90E0B4C5-D15B-4AD9-A824-C6E399BFDFDE} = {90A07D9F-B417-4D28-BC58-5D987CB90430}
+		{BFF978FE-1BDF-4689-9804-4061CE796789} = {90A07D9F-B417-4D28-BC58-5D987CB90430}
+		{11C5461F-E23A-444F-B0D7-224C09AC7127} = {90A07D9F-B417-4D28-BC58-5D987CB90430}
+		{DF8A99F9-EF40-4319-BEDE-EAC5447FD62C} = {90A07D9F-B417-4D28-BC58-5D987CB90430}
+		{D3552144-80A0-4C3B-A0ED-A4A03691466B} = {90A07D9F-B417-4D28-BC58-5D987CB90430}
+		{7E6BE982-6DCF-4CCB-AF7E-80CD5F90ED00} = {90A07D9F-B417-4D28-BC58-5D987CB90430}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {558E8FF9-5AE8-4471-BF84-D79F5B0E91FB}
