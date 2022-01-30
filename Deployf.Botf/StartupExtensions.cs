@@ -35,7 +35,7 @@ public static class StartupExtensions
         }
         else
         {
-            app.UseTelegramBotWebhook<BotfBot>(builder);
+            app.UseWebhook(builder);
             app.BotfEnsureWebhookSet<BotfBot>();
         }
 
@@ -206,6 +206,18 @@ public static class StartupExtensions
                 .GetResult();
         }
 
+        return app;
+    }
+
+    internal static IApplicationBuilder UseWebhook(this IApplicationBuilder app, IBotBuilder botBuilder)
+    {
+        var updateDelegate = botBuilder.Build();
+        var conf = app.ApplicationServices.GetRequiredService<BotfOptions>();
+        app.Map((PathString)conf.WebhookPath, builder => 
+        {
+            var type = Type.GetType("Telegram.Bot.Framework.TelegramBotMiddleware`1[Deployf.Botf.BotfBot], Telegram.Bot.Framework");
+            builder.UseMiddleware(type, new [] { updateDelegate });
+        });
         return app;
     }
 }
