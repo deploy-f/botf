@@ -5,22 +5,22 @@ Make beautiful and clear telegram bots with the asp.net-like architecture!
 
 BotF has next features:
 
-* long pooling and webhook mode without any changes in the code
-* very convinient way to work with commands and reply buttons
-* integrated pagination with buttons
-* authentication and role-based authorization
-* statemachine for complicated dialogs with users
-* asp.net-like approach to develop bots
-* automatic creating of command menu
-* integrated DateTime picker
-* auto sending
-* good performance
+🤘 long pooling and webhook mode without any changes in the code  
+😎 very convinient way to work with commands and reply buttons  
+👆 integrated pagination with buttons  
+🆔 authentication and role-based authorization  
+🔥 statemachine for complicated dialogs with users  
+🕸️ asp.net-like approach to develop bots  
+⚒️ automatic creating of command menu  
+🗓️ integrated DateTime picker  
+📤 auto sending  
+🚤 good performance  
 
 ## Documentaion
 
- (Under development) Visit to [our wiki](https://github.com/deploy-f/botf/wiki) to read botf documentation
+ 🔜 Documentation is under developement. We will push it here in the readme file soon.
 
- Good video on youtube https://www.youtube.com/watch?v=hieLnm9wO6s
+ ▶️ There is a good video on youtube https://www.youtube.com/watch?v=hieLnm9wO6s
 
 ## Install
 
