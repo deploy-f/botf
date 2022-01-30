@@ -1,4 +1,9 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using Telegram.Bot.Framework.Abstractions;
 
 namespace Deployf.Botf;
@@ -27,6 +32,59 @@ public class ArgumentBindInt32 : IArgumentBind
     public ValueTask<object> Decode(ParameterInfo parameter, object argument, IUpdateContext _)
     {
         return new (int.Parse(argument.ToString()!));
+    }
+
+    public string Encode(ParameterInfo parameter, object argument, IUpdateContext _)
+    {
+        return argument.ToString()!;
+    }
+}
+
+public class ArgumentBindDecimal : IArgumentBind
+{
+    public bool CanDecode(ParameterInfo parameter, object argument)
+    {
+        return parameter.ParameterType == typeof(decimal);
+    }
+
+    public bool CanEncode(ParameterInfo parameter, object argument)
+    {
+        return parameter.ParameterType == typeof(decimal);
+    }
+
+    public ValueTask<object> Decode(ParameterInfo parameter, object argument, IUpdateContext _)
+    {
+        return new (decimal.Parse(argument.ToString()!));
+    }
+
+    public string Encode(ParameterInfo parameter, object argument, IUpdateContext _)
+    {
+        return argument.ToString()!;
+    }
+}
+
+public class ArgumentBindDouble : IArgumentBind
+{
+    public bool CanDecode(ParameterInfo parameter, object argument)
+    {
+        return parameter.ParameterType == typeof(double);
+    }
+
+    public bool CanEncode(ParameterInfo parameter, object argument)
+    {
+        return parameter.ParameterType == typeof(double);
+    }
+
+    public ValueTask<object> Decode(ParameterInfo parameter, object argument, IUpdateContext _)
+    {
+        // for parse '.' and ',' delimeter
+        var isParsed = double.TryParse(argument.ToString()!, NumberStyles.Any, CultureInfo.CurrentCulture, out var number) ||
+               double.TryParse(argument.ToString()!, NumberStyles.Any, CultureInfo.GetCultureInfo("en-US"), out number) ||
+               double.TryParse(argument.ToString()!, NumberStyles.Any, CultureInfo.InvariantCulture, out number);
+        
+        return isParsed 
+            ? new (number)
+            : throw new ArgumentBinderException();
     }
 
     public string Encode(ParameterInfo parameter, object argument, IUpdateContext _)
