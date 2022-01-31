@@ -88,7 +88,7 @@ Here is a documentation for all features of BotF
 ### Make the program
 
 You can go in two ways:
-1. Inherit from `BotfProgram` and call `StartBot(args)` to make simple bot only with message handliers
+1. Inherit from `BotfProgram` or just call static method `StartBot(args)` to make simple bot only with message handliers
 2. Or construct asp.net web api application from scratch. Let's call it 'advanced method'
 
 #### `StartBot` method
@@ -138,6 +138,20 @@ You can configure next parameters:
 | `api` | Url to custom telegram api. Useful if you need to work through local bot api server |
 
 ### Handling the updates
+
+At first you need to create class controller and itherit it from BotController.
+Then add method and let the `Action` attribute
+
+Action attribute takes 2 parameters:
+* `Template` - the template for message or callback data if it is a callback of the button.
+If you want make a handler of the command just use full version `/command` as template
+* `Description`
+
+```charp
+class FirstController : BotController {
+    void Method
+}
+```
 
 #### Actions
 
