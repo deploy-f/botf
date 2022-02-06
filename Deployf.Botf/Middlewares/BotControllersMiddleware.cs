@@ -23,7 +23,7 @@ public class BotControllersMiddleware : IUpdateHandler
         _accessor.Context = context;
 
         var payload = context.GetSafeTextPayload();
-        if (payload != null)
+        if (!string.IsNullOrEmpty(payload))
         {
             string[] entries;
             if (payload[0] == '/')
