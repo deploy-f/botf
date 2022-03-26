@@ -19,6 +19,7 @@ public class BotfOptions
     public bool AutoSend { get; set; } = true;
     public bool HandleOnlyMentionedInGroups { get; set; }
     public string ApiBaseUrl { get; set; }
+    public bool AutoCleanReplyKeyboard { get; set; }
 
     public bool UseWebhooks => !string.IsNullOrEmpty(WebhookUrl);
     public string? WebhookPath

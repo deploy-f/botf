@@ -8,6 +8,8 @@ namespace Deployf.Botf;
 
 public abstract class BotController
 {
+    private const string LAST_MESSAGE_ID_KEY = "$last_message_id";
+
     public UserClaims User { get; set; } = new UserClaims();
     protected long ChatId { get; private set; }
     protected long FromId { get; private set; }
@@ -186,13 +188,15 @@ public abstract class BotController
     protected async Task Send(string text, ParseMode mode)
     {
         IsDirty = false;
-        await Context!.Bot.Client.SendTextMessageAsync(
+        var message = await Context!.Bot.Client.SendTextMessageAsync(
             Context!.GetSafeChatId()!,
             text,
             ParseMode.Html,
             replyMarkup: Message.Markup,
             cancellationToken: CancelToken,
             replyToMessageId: Message.ReplyToMessageId);
+        await TryCleanLastMessageReplyKeyboard();
+        await TrySaveLastMessageId(Message.Markup as InlineKeyboardMarkup, message);
         ClearMessage();
     }
 
@@ -208,15 +212,17 @@ public abstract class BotController
 
     public async Task Update(InlineKeyboardMarkup? markup = null, string? text = null, ParseMode mode = ParseMode.Html)
     {
+        var markupValue = markup ?? Message.Markup as InlineKeyboardMarkup;
         IsDirty = false;
-        await Context!.Bot.Client.EditMessageTextAsync(
+        var message = await Context!.Bot.Client.EditMessageTextAsync(
             Context!.GetSafeChatId()!,
             Context!.GetSafeMessageId().GetValueOrDefault(),
             text ?? Message.Message,
             parseMode: mode,
-            replyMarkup: markup ?? Message.Markup as InlineKeyboardMarkup,
+            replyMarkup: markupValue,
             cancellationToken: CancelToken
         );
+        await TrySaveLastMessageId(markupValue, message);
         ClearMessage();
     }
 
@@ -238,6 +244,55 @@ public abstract class BotController
         if (text != null)
         {
             await Send(text);
+        }
+    }
+
+    private async ValueTask TrySaveLastMessageId(InlineKeyboardMarkup? markupValue, Telegram.Bot.Types.Message message)
+    {
+        try
+        {
+            if (Context!.Bot is BotfBot bot && bot.Options.AutoCleanReplyKeyboard)
+            {
+                if (markupValue != null)
+                {
+                    await Store!.Set(FromId, LAST_MESSAGE_ID_KEY, $"{message.Chat.Id};{message.MessageId}");
+                }
+                else
+                {
+                    await Store!.Remove(FromId, LAST_MESSAGE_ID_KEY);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            var logger = Context.Services.GetService<ILogger<BotController>>();
+            logger?.LogError(e, "Error while trying to set last message reply keyboard for clean it in future");
+        }
+    }
+
+    private async ValueTask TryCleanLastMessageReplyKeyboard()
+    {
+        try
+        {
+            if (Context!.Bot is BotfBot bot && bot.Options.AutoCleanReplyKeyboard)
+            {
+                if (await Store!.Contain(FromId, LAST_MESSAGE_ID_KEY))
+                {
+                    var data = await Store.Get<string>(FromId, LAST_MESSAGE_ID_KEY, null);
+                    if (data != null)
+                    {
+                        var items = data.Split(';');
+                        var chatId = long.Parse(items[0]);
+                        var messageId = int.Parse(items[1]);
+                        await Client.EditMessageReplyMarkupAsync(chatId, messageId, null);
+                    }
+                }
+            }
+        }
+        catch(Exception e)
+        {
+            var logger = Context.Services.GetService<ILogger<BotController>>();
+            logger?.LogError(e, "Error while trying to clean last message reply keyboard");
         }
     }
     #endregion

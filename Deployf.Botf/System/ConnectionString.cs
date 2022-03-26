@@ -66,6 +66,12 @@ public class ConnectionString
                 case "api":
                     options.ApiBaseUrl = cortage[1];
                     break;
+                case "autoclean":
+                    if (bool.TryParse(cortage[1], out var autoclean))
+                    {
+                        options.AutoCleanReplyKeyboard = autoclean;
+                    }
+                    break;
             }
         }
 
