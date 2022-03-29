@@ -20,7 +20,7 @@ public class BotfOptions
     public bool HandleOnlyMentionedInGroups { get; set; }
     public string ApiBaseUrl { get; set; }
     public bool AutoCleanReplyKeyboard { get; set; }
-
+    public TimeSpan? ChainTimeout { get; set; } = TimeSpan.FromHours(1);
     public bool UseWebhooks => !string.IsNullOrEmpty(WebhookUrl);
     public string? WebhookPath
     {

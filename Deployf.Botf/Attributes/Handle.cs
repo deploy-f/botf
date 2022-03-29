@@ -21,5 +21,6 @@ public enum Handle
     /// Execute action before message go to routing and whole the botf
     /// </summary>
     BeforeAll,
-    ClearState
+    ClearState,
+    ChainTimeout
 }

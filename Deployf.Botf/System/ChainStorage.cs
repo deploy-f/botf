@@ -1,4 +1,5 @@
-﻿using Telegram.Bot.Framework.Abstractions;
+﻿using System.Collections.Concurrent;
+using Telegram.Bot.Framework.Abstractions;
 
 namespace Deployf.Botf;
 
@@ -8,7 +9,7 @@ public class ChainStorage
 
     public ChainStorage()
     {
-        _chains = new Dictionary<long, ChainItem?>();
+        _chains = new ConcurrentDictionary<long, ChainItem?>();
     }
 
     public ChainItem? Get(long id)
@@ -19,7 +20,11 @@ public class ChainStorage
 
     public void Clear(long id)
     {
-        _chains[id] = null;
+        if(_chains.ContainsKey(id))
+        {
+            _chains[id] = null;
+            _chains.Remove(id);
+        }
     }
 
     public void Set(long id, ChainItem item)

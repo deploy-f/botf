@@ -72,6 +72,9 @@ public class ConnectionString
                         options.AutoCleanReplyKeyboard = autoclean;
                     }
                     break;
+                case "chain_timeout":
+                    options.ChainTimeout = cortage[1].TryParseTimeSpan();
+                    break;
             }
         }
 

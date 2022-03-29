@@ -490,19 +490,43 @@ public abstract class BotController
 
     #region chaining
 
-    public async Task<IUpdateContext> AwaitNextUpdate()
+    public async Task<IUpdateContext> AwaitNextUpdate(Action onCanceled = null)
     {
+        var options = ((BotfBot)Context.Bot).Options;
         var store = Context.Services.GetRequiredService<ChainStorage>();
         var tcs = new TaskCompletionSource<IUpdateContext>();
         store.Set(ChatId, new (tcs));
-        return await tcs.Task;
+        if(options.ChainTimeout.HasValue)
+        {
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(options.ChainTimeout.Value);
+                if(tcs != null)
+                {
+                    store.Clear(ChatId);
+                    tcs.SetCanceled();
+                }
+            });
+        }
+        
+        try
+        {
+            var context = await tcs.Task;
+            tcs = null;
+            return context;
+        }
+        catch(TaskCanceledException)
+        {
+            onCanceled?.Invoke();
+            throw new ChainTimeoutException(onCanceled != null);
+        }
     }
 
-    public async Task<string> AwaitText()
+    public async Task<string> AwaitText(Action onCanceled = null)
     {
         while (true)
         {
-            var update = await AwaitNextUpdate();
+            var update = await AwaitNextUpdate(onCanceled);
             if (update.Update.Type != UpdateType.Message)
             {
                 continue;
@@ -512,11 +536,11 @@ public abstract class BotController
         }
     }
 
-    public async Task<string> AwaitQuery()
+    public async Task<string> AwaitQuery(Action onCanceled = null)
     {
         while (true)
         {
-            var update = await AwaitNextUpdate();
+            var update = await AwaitNextUpdate(onCanceled);
             if (update.Update.Type != UpdateType.CallbackQuery)
             {
                 continue;

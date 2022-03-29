@@ -6,26 +6,37 @@ public class BotControllersChainMiddleware : IUpdateHandler
 {
     readonly ILogger<BotControllersChainMiddleware> _log;
     readonly ChainStorage _chainStorage;
+    readonly BotControllersInvoker _invoker;
+    readonly BotControllerHandlers _handlers;
 
-    public BotControllersChainMiddleware(ILogger<BotControllersChainMiddleware> log, ChainStorage chainStorage)
+    public BotControllersChainMiddleware(ILogger<BotControllersChainMiddleware> log, ChainStorage chainStorage, BotControllersInvoker invoker, BotControllerHandlers handlers)
     {
         _log = log;
         _chainStorage = chainStorage;
+        _invoker = invoker;
+        _handlers = handlers;
     }
 
     public async Task HandleAsync(IUpdateContext context, UpdateDelegate next, CancellationToken cancellationToken)
     {
-        var id = context.GetSafeChatId();
-        if (id != null)
+        try
         {
-            var chain = _chainStorage.Get(id.Value);
-            if(chain != null)
+            var id = context.GetSafeChatId();
+            if (id != null)
             {
-                _log.LogTrace("Found chain for user {userId}, triggered continue execution of chain", id.Value);
-                _chainStorage.Clear(id.Value);
-                if (chain.Synchronizator != null)
+                var chain = _chainStorage.Get(id.Value);
+                if (chain != null)
                 {
-                    chain.Synchronizator.SetResult(context);
+                    _log.LogTrace("Found chain for user {userId}, triggered continue execution of chain", id.Value);
+                    _chainStorage.Clear(id.Value);
+                    if (chain.Synchronizator != null)
+                    {
+                        chain.Synchronizator.SetResult(context);
+                    }
+                }
+                else
+                {
+                    await next(context, cancellationToken);
                 }
             }
             else
@@ -33,9 +44,13 @@ public class BotControllersChainMiddleware : IUpdateHandler
                 await next(context, cancellationToken);
             }
         }
-        else
+        catch(ChainTimeoutException e)
         {
-            await next(context, cancellationToken);
+            _log.LogDebug("Chain timeout reached for chat {chatId}", context.GetChatId());
+            if (!e.Handled && _handlers.TryGetValue(Handle.ChainTimeout, out var controller))
+            {
+                await _invoker.Invoke(context, cancellationToken, controller);
+            }
         }
     }
 }

@@ -18,7 +18,7 @@ class Program : BotfProgram
     {
         await Send($"Hi! What is your name?");
 
-        var name = await AwaitText();
+        var name = await AwaitText(() => Send("Use /start to try again"));
         await Send($"Hi, {name}! Where are you from?");
 
         var place = await AwaitText();
@@ -58,5 +58,11 @@ class Program : BotfProgram
         {
             Push("Error");
         }
+    }
+
+    [On(Handle.ChainTimeout)]
+    public async Task ChainTimeout()
+    {
+        PushL("timeout");
     }
 }
