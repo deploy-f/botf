@@ -125,6 +125,7 @@ public static class StartupExtensions
         services.AddSingleton<IArgumentBind, ArgumentBindString>();
         services.AddSingleton<IArgumentBind, ArgumentBindDateTime>();
         services.AddSingleton<IArgumentBind, ArgumentBindEnum>();
+        services.AddSingleton<IArgumentBind, ArgumentBindGuid>();
         services.AddSingleton<IArgumentBind, ArgumentAttributeBindState>();
         services.AddSingleton<ArgumentBinder>();
 
