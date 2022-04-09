@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using Telegram.Bot;
 using Telegram.Bot.Framework.Abstractions;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -188,13 +189,28 @@ public abstract class BotController
     protected async Task Send(string text, ParseMode mode)
     {
         IsDirty = false;
-        var message = await Context!.Bot.Client.SendTextMessageAsync(
-            Context!.GetSafeChatId()!,
-            text,
-            ParseMode.Html,
-            replyMarkup: Message.Markup,
-            cancellationToken: CancelToken,
-            replyToMessageId: Message.ReplyToMessageId);
+        Message message;
+        if(Message.PhotoUrl == null)
+        {
+            message = await Client.SendTextMessageAsync(
+                Context!.GetSafeChatId()!,
+                text,
+                ParseMode.Html,
+                replyMarkup: Message.Markup,
+                cancellationToken: CancelToken,
+                replyToMessageId: Message.ReplyToMessageId);
+        }
+        else
+        {
+            message = await Client.SendPhotoAsync(
+                Context!.GetSafeChatId()!,
+                Message.PhotoUrl,
+                text,
+                ParseMode.Html,
+                replyMarkup: Message.Markup,
+                cancellationToken: CancelToken,
+                replyToMessageId: Message.ReplyToMessageId);
+        }
         await TryCleanLastMessageReplyKeyboard();
         await TrySaveLastMessageId(Message.Markup as InlineKeyboardMarkup, message);
         ClearMessage();
@@ -202,7 +218,7 @@ public abstract class BotController
 
     public async Task UpdateMarkup(InlineKeyboardMarkup markup)
     {
-        await Context!.Bot.Client.EditMessageReplyMarkupAsync(
+        await Client.EditMessageReplyMarkupAsync(
             Context!.GetSafeChatId()!,
             Context!.GetSafeMessageId().GetValueOrDefault(),
             markup,
@@ -214,7 +230,7 @@ public abstract class BotController
     {
         var markupValue = markup ?? Message.Markup as InlineKeyboardMarkup;
         IsDirty = false;
-        var message = await Context!.Bot.Client.EditMessageTextAsync(
+        var message = await Client.EditMessageTextAsync(
             Context!.GetSafeChatId()!,
             Context!.GetSafeMessageId().GetValueOrDefault(),
             text ?? Message.Message,
@@ -233,7 +249,7 @@ public abstract class BotController
 
     protected async Task AnswerCallback(string? text = null)
     {
-        await Context!.Bot.Client.AnswerCallbackQueryAsync(Context!.GetCallbackQuery().Id,
+        await Client.AnswerCallbackQueryAsync(Context!.GetCallbackQuery().Id,
             text,
             cancellationToken: CancelToken);
     }
@@ -384,6 +400,11 @@ public abstract class BotController
         {
             Message.ReplyTo(messageId.GetValueOrDefault());
         }
+    }
+
+    public void Photo(string url)
+    {
+        Message.SetPhotoUrl(url);
     }
 
     public void ClearMessage()

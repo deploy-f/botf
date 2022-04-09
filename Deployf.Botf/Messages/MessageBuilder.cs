@@ -9,6 +9,7 @@ public class MessageBuilder
     public long ChatId { get; private set; }
     public StringBuilder BufferedMessage { get; private set; } = new StringBuilder();
     public IReplyMarkup? Markup { get; set; }
+    public string PhotoUrl { get; set; }
     public List<List<InlineKeyboardButton>>? Reply { get; set; }
     public List<List<KeyboardButton>>? Keyboard { get; set; }
     public int ReplyToMessageId { get; set; } = 0;
@@ -32,6 +33,13 @@ public class MessageBuilder
     public MessageBuilder SetMarkup(IReplyMarkup markup)
     {
         Markup = markup;
+        IsDirty = true;
+        return this;
+    }
+
+    public MessageBuilder SetPhotoUrl(string url)
+    {
+        PhotoUrl = url;
         IsDirty = true;
         return this;
     }
@@ -90,7 +98,11 @@ public class MessageBuilder
 
     public MessageBuilder Button(string text, string payload)
     {
-        Button(InlineKeyboardButton.WithCallbackData(text, payload));
+        var button = payload.IsUrl()
+            ? InlineKeyboardButton.WithUrl(text, payload)
+            : InlineKeyboardButton.WithCallbackData(text, payload);
+
+        Button(button);
         return this;
     }
 
