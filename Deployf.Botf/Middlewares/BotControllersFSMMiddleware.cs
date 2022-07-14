@@ -19,7 +19,12 @@ public class BotControllersFSMMiddleware : IUpdateHandler
 
     public async Task HandleAsync(IUpdateContext context, UpdateDelegate next, CancellationToken cancellationToken)
     {
+#if NET5_0
         Func<ValueTask>? afterNext = null;
+#else
+        Func<Task>? afterNext = null;
+#endif
+        
 
         var uid = context.GetSafeUserId();
         if (!context.Items.ContainsKey("controller") && uid != null)

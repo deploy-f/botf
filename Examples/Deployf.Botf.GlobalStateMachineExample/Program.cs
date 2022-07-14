@@ -1,6 +1,14 @@
 using Deployf.Botf;
 using Telegram.Bot.Types.Enums;
 
+#if NET5_0
+    using ValueTask = System.Threading.Tasks.ValueTask;
+    using ValueTaskGeneric = System.Threading.Tasks.ValueTask<object>;
+#else
+using ValueTask = System.Threading.Tasks.Task;
+using ValueTaskGeneric = System.Threading.Tasks.Task<object>;
+#endif
+
 class Program : BotfProgram
 {
     public static void Main(string[] args) => StartBot(args);

@@ -3,10 +3,17 @@ using Telegram.Bot.Framework.Abstractions;
 
 namespace Deployf.Botf;
 
-public record RouteInfo<T>(
-    MethodInfo Method,
-    RouteSkipDelegate? Skip
-);
+public class RouteInfo<T>
+{
+    public readonly MethodInfo Method;
+    public readonly RouteSkipDelegate? Skip;
+    
+    public RouteInfo(MethodInfo method, RouteSkipDelegate? skip)
+    {
+        Method = method;
+        Skip = skip;
+    }
+}
 
 public abstract class BotControllerMap<T> : Dictionary<T, MethodInfo> where T : notnull
 {

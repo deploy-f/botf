@@ -1,4 +1,7 @@
 ﻿using System.Collections.Concurrent;
+#if !NET5_0
+    using ValueTask = System.Threading.Tasks.Task;
+#endif
 
 namespace Deployf.Botf;
 
@@ -11,13 +14,23 @@ public class InMemoryKeyValueStorage : IKeyValueStorage
         _store = new ConcurrentDictionary<string, object>();
     }
 
+#if NET5_0
     public ValueTask<bool> Contain(long userId, string key)
     {
         var realKey = GetRealKey(userId, key);
         return new(_store.ContainsKey(realKey));
     }
+#else
+    public Task<bool> Contain(long userId, string key)
+    {
+        var realKey = GetRealKey(userId, key);
+        return Task.FromResult(_store.ContainsKey(realKey));
+    }
+#endif
 
-    public ValueTask<T?> Get<T>(long userId, string key, T? defaultValue)
+    
+#if NET5_0
+        public ValueTask<T?> Get<T>(long userId, string key, T? defaultValue)
     {
         var realKey = GetRealKey(userId, key);
         if(_store.TryGetValue(realKey, out var value))
@@ -27,8 +40,21 @@ public class InMemoryKeyValueStorage : IKeyValueStorage
 
         return new (defaultValue);
     }
+#else
+    public Task<T?> Get<T>(long userId, string key, T? defaultValue)
+    {
+        var realKey = GetRealKey(userId, key);
+        if(_store.TryGetValue(realKey, out var value))
+        {
+            return Task.FromResult((T)value);
+        }
 
-    public ValueTask<object?> Get(long userId, string key, object? defaultValue)
+        return Task.FromResult(defaultValue);
+    }
+#endif
+
+#if NET5_0
+        public ValueTask<object?> Get(long userId, string key, object? defaultValue)
     {
         var realKey = GetRealKey(userId, key);
         if (_store.TryGetValue(realKey, out var value))
@@ -38,7 +64,18 @@ public class InMemoryKeyValueStorage : IKeyValueStorage
 
         return new(defaultValue);
     }
+#else
+    public Task<object?> Get(long userId, string key, object? defaultValue)
+    {
+        var realKey = GetRealKey(userId, key);
+        if (_store.TryGetValue(realKey, out var value))
+        {
+            return Task.FromResult(value);
+        }
 
+        return Task.FromResult(defaultValue);
+    }
+#endif
     public async ValueTask Remove(long userId, string key)
     {
         if(await Contain(userId, key))

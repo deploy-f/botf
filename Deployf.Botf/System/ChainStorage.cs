@@ -31,6 +31,15 @@ public class ChainStorage
     {
         _chains[id] = item;
     }
+    
 
-    public record ChainItem(TaskCompletionSource<IUpdateContext> Synchronizator);
+    public class ChainItem
+    {
+        public readonly TaskCompletionSource<IUpdateContext> Synchronizator;
+        
+        public ChainItem(TaskCompletionSource<IUpdateContext> Synchronizator)
+        {
+            this.Synchronizator = Synchronizator;
+        }
+    };
 }

@@ -1,5 +1,12 @@
 ﻿using System.Reflection;
 using Telegram.Bot.Framework.Abstractions;
+#if NET5_0
+    using ValueTask = System.Threading.Tasks.ValueTask;
+    using ValueTaskGeneric = System.Threading.Tasks.ValueTask<object>;
+#else
+using ValueTask = System.Threading.Tasks.Task;
+using ValueTaskGeneric = System.Threading.Tasks.Task<object>;
+#endif
 
 namespace Deployf.Botf;
 
@@ -22,7 +29,7 @@ public class ArgumentAttributeBindState : IArgumentBind
         _store = store;
     }
 
-    public async ValueTask<object> Decode(ParameterInfo parameter, object argument, IUpdateContext ctx)
+    public async ValueTaskGeneric Decode(ParameterInfo parameter, object argument, IUpdateContext ctx)
     {
         var userId = ctx.GetSafeUserId()!.Value;
         var attribute = parameter.GetCustomAttribute<StateAttribute>()!;

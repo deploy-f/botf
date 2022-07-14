@@ -1,4 +1,13 @@
-﻿namespace Deployf.Botf;
+﻿#if NET5_0
+    using ValueTask = System.Threading.Tasks.ValueTask;
+    using ValueTaskGeneric = System.Threading.Tasks.ValueTask<object>;
+#else
+    using ValueTask = System.Threading.Tasks.Task;
+    using ValueTaskGeneric = System.Threading.Tasks.Task<object>;
+#endif
+
+
+namespace Deployf.Botf;
 
 public static class Consts
 {

@@ -18,12 +18,12 @@ public class FlagMessageBuilder<T> where T : struct, Enum
 
     public void Build(MessageBuilder b)
     {
-        var flags = Enum.GetNames<T>();
-        var values = Enum.GetValues<T>();
+        var flags = Enum.GetNames(typeof(T));
+        var values = Enum.GetValues(typeof(T));
 
         for (int i = 0; i < values.Length; i++)
         {
-            T value = values[i];
+            T value = (T)values.GetValue(i)!;
             var isSet = _value.HasFlag(value);
 
             var title = value.ToString();

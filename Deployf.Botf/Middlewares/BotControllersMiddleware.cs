@@ -70,7 +70,11 @@ public class BotControllersMiddleware : IUpdateHandler
             && key.Count(CharEqualDog) == 1
             && key.EndsWith(_opts.UsernameTag!))
         {
-            var tuple = key.Split('@', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var tuple = key.Split('@', StringSplitOptions.RemoveEmptyEntries
+                #if NET5_0
+                            | StringSplitOptions.TrimEntries
+                #endif
+                );
             key = tuple[0];
         }
 

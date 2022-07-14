@@ -4,6 +4,11 @@ using Telegram.Bot.Framework.Abstractions;
 using Telegram.Bot.Requests;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+//
+//
+// #if !NET5_0
+// using IApplicationBuilder = Microsoft.AspNetCore.Hosting.IWebHostBuilder;
+// #endif
 
 namespace Deployf.Botf;
 

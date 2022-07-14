@@ -5,6 +5,10 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
+#if !NET5_0
+using ValueTask = System.Threading.Tasks.Task;
+#endif
+
 namespace Deployf.Botf;
 
 public abstract class BotController
@@ -57,7 +61,14 @@ public abstract class BotController
         return Store!.Set(FromId, name, state);
     }
 
-    protected ValueTask<T?> GetAState<T>(string? name = null, T? def = default)
+    protected
+#if NET5_0
+        ValueTask<T?>
+#else
+        Task<T?>
+#endif
+         
+        GetAState<T>(string? name = null, T? def = default)
     {
         if (name == null)
         {
@@ -443,12 +454,14 @@ public abstract class BotController
         return FPath(typeof(T).Name, name);
     }
 
+#if NET5_0
     public string Q<T>(Expression<Func<T, Func<ValueTask>>> noArgs) where T : BotController
     {
         dynamic param = noArgs;
         var name = param.Body.Operand.Object.Value.Name;
         return FPath(typeof(T).Name, name);
     }
+#endif
 
     public string Q<T, A1>(Expression<Func<T, Action<A1>>> oneArg, object arg1) where T : BotController
     {
@@ -456,7 +469,7 @@ public abstract class BotController
         var name = param.Body.Operand.Object.Value.Name;
         return FPath(typeof(T).Name, name, arg1);
     }
-
+    
     public string Q<T, A1>(Expression<Func<T, Func<A1, Task>>> oneArg, object arg1) where T : BotController
     {
         dynamic param = oneArg;
@@ -464,12 +477,14 @@ public abstract class BotController
         return FPath(typeof(T).Name, name, arg1);
     }
 
+#if NET5_0
     public string Q<T, A1>(Expression<Func<T, Func<A1, ValueTask>>> oneArg, object arg1) where T : BotController
     {
         dynamic param = oneArg;
         var name = param.Body.Operand.Object.Value.Name;
         return FPath(typeof(T).Name, name, arg1);
     }
+#endif
 
     public string Q<T>(Func<T, Task> oneArg, object arg)
     {

@@ -18,7 +18,11 @@ public class ConnectionString
 
         var options = new BotfOptions();
 
-        var main = value.Split('?', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var main = value.Split('?', StringSplitOptions.RemoveEmptyEntries
+#if NET5_0
+                                    | StringSplitOptions.TrimEntries
+#endif
+);
 
         if(main.Length > 0)
         {
@@ -34,10 +38,18 @@ public class ConnectionString
             return options;
         }
 
-        var values = main[1].Split('&', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var values = main[1].Split('&', StringSplitOptions.RemoveEmptyEntries
+#if NET5_0
+                                    | StringSplitOptions.TrimEntries
+#endif
+        );
         foreach (var kv in values)
         {
-            var cortage = kv.Split('=', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var cortage = kv.Split('=', StringSplitOptions.RemoveEmptyEntries
+#if NET5_0
+                                    | StringSplitOptions.TrimEntries
+#endif
+            );
             if(cortage == null || cortage.Length != 2)
             {
                 throw new Exception("Botf connection string is wrong");
