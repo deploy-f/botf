@@ -27,6 +27,7 @@ public class BotfProgram : BotController
 
         if(botOptions == null && builder.Configuration["bot"] != null)
         {
+            //TODO: check the bot section, it should be an object
             botOptions = builder.Configuration.GetSection("bot").Get<BotfOptions>();
         }
 

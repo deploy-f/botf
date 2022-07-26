@@ -32,6 +32,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deployf.Botf.ActionButtonsE
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deployf.Botf.MediaExample", "Examples\Deployf.Botf.MediaExample\Deployf.Botf.MediaExample.csproj", "{F3B7EFA5-02B0-4970-9FAA-E4DD7D44C45E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deployf.Botf.WebAppExample", "Examples\Deployf.Botf.WebAppExample\Deployf.Botf.WebAppExample.csproj", "{3C21F035-1A68-4782-B985-7BEB3600B501}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -78,6 +80,10 @@ Global
 		{F3B7EFA5-02B0-4970-9FAA-E4DD7D44C45E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F3B7EFA5-02B0-4970-9FAA-E4DD7D44C45E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F3B7EFA5-02B0-4970-9FAA-E4DD7D44C45E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C21F035-1A68-4782-B985-7BEB3600B501}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C21F035-1A68-4782-B985-7BEB3600B501}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C21F035-1A68-4782-B985-7BEB3600B501}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C21F035-1A68-4782-B985-7BEB3600B501}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -92,6 +98,7 @@ Global
 		{7E6BE982-6DCF-4CCB-AF7E-80CD5F90ED00} = {90A07D9F-B417-4D28-BC58-5D987CB90430}
 		{7F105B52-AC24-416A-BAF5-12F5430BBCC2} = {90A07D9F-B417-4D28-BC58-5D987CB90430}
 		{F3B7EFA5-02B0-4970-9FAA-E4DD7D44C45E} = {90A07D9F-B417-4D28-BC58-5D987CB90430}
+		{3C21F035-1A68-4782-B985-7BEB3600B501} = {90A07D9F-B417-4D28-BC58-5D987CB90430}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {558E8FF9-5AE8-4471-BF84-D79F5B0E91FB}

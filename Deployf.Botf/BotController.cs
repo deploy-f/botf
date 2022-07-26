@@ -314,6 +314,35 @@ public abstract class BotController
     #endregion
 
     #region formatting
+
+    public InlineKeyboardButton WebApp(string text, string? url = null)
+    {
+        var internalUrl = url ?? ((BotfBot)Context.Bot).Options.WebAppUrl;
+        if(internalUrl == null)
+        {
+            throw new BotfException("Web app url is empty! You must pass the web app url to the WebApp method though parameter `url` " +
+                "or through global configuration option `WebAppUrl` or through connection string");
+        }
+
+        return InlineKeyboardButton.WithWebApp(text, new WebAppInfo {
+            Url = internalUrl
+        });
+    }
+
+    public KeyboardButton KWebApp(string text, string? url = null)
+    {
+        var internalUrl = url ?? ((BotfBot)Context.Bot).Options.WebAppUrl;
+        if(internalUrl == null)
+        {
+            throw new BotfException("Web app url is empty! You must pass the web app url to the KWebApp method though parameter `url` " +
+                "or through global configuration option `WebAppUrl` or through connection string");
+        }
+
+        return KeyboardButton.WithWebApp(text, new WebAppInfo {
+            Url = internalUrl
+        });
+    }
+
     protected void Markup(IReplyMarkup markup)
     {
         Message.SetMarkup(markup);

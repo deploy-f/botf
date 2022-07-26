@@ -1,0 +1,25 @@
+@page
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<h1>Hello from webapp!</h1>
+<h3>The time on the server is @DateTime.Now</h2>
+
+<label for="data">Write the data for bot: </label>
+<input id="data" type="text"/>
+
+<button onclick="done()">Done (works only if open webapp from keyboard)</button>
+
+<hr />
+
+<button onclick="window.Telegram.WebApp.close()">Close</button>
+
+<script>
+
+function done()
+{
+    var input = document.getElementById("data");
+    window.Telegram.WebApp.sendData(input.value);
+}
+
+</script>

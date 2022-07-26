@@ -22,6 +22,7 @@ public class BotfOptions
     public bool AutoCleanReplyKeyboard { get; set; }
     public TimeSpan? ChainTimeout { get; set; } = TimeSpan.FromHours(1);
     public bool UseWebhooks => !string.IsNullOrEmpty(WebhookUrl);
+    public string? WebAppUrl { get; set; }
     public string? WebhookPath
     {
         get

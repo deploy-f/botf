@@ -68,7 +68,7 @@ public static class StartupExtensions
     {
         if(string.IsNullOrEmpty(options.Username))
         {
-            var telegramClient = new TelegramBotClient(options.Token, baseUrl: options.ApiBaseUrl);
+            var telegramClient = new TelegramBotClient(new TelegramBotClientOptions(options.Token!, baseUrl: options.ApiBaseUrl));
             var botUser = telegramClient.GetMeAsync()
                 .ConfigureAwait(false)
                 .GetAwaiter()

@@ -75,6 +75,9 @@ public class ConnectionString
                 case "chain_timeout":
                     options.ChainTimeout = cortage[1].TryParseTimeSpan();
                     break;
+                case "webapp_url":
+                    options.WebAppUrl = cortage[1];
+                    break;
             }
         }
 
