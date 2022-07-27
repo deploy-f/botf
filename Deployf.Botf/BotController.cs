@@ -540,7 +540,7 @@ public abstract class BotController
 
     #region chaining
 
-    public async Task<IUpdateContext> AwaitNextUpdate(Action onCanceled = null)
+    public async Task<IUpdateContext> AwaitNextUpdate(Action? onCanceled = null)
     {
         var options = ((BotfBot)Context.Bot).Options;
         var store = Context.Services.GetRequiredService<ChainStorage>();
@@ -572,7 +572,7 @@ public abstract class BotController
         }
     }
 
-    public async Task<string> AwaitText(Action onCanceled = null)
+    public async Task<string> AwaitText(Action? onCanceled = null)
     {
         while (true)
         {
@@ -586,7 +586,7 @@ public abstract class BotController
         }
     }
 
-    public async Task<string> AwaitQuery(Action onCanceled = null)
+    public async Task<string> AwaitQuery(Action? onCanceled = null)
     {
         while (true)
         {

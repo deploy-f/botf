@@ -50,7 +50,7 @@ class Program : BotfProgram
     }
 
     [On(Handle.ClearState)]
-    public void ClearState()
+    public void CleanState()
     {
         RowKButton(Q(State1Go));
         RowKButton(Q(Hello));

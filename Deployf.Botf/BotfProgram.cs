@@ -7,7 +7,7 @@ public class BotfProgram : BotController
         bool skipHello = false,
         Action<IServiceCollection, IConfiguration>? onConfigure = null,
         Action<IApplicationBuilder, IConfiguration>? onRun = null,
-        BotfOptions options = null)
+        BotfOptions? options = null)
     {
         if (!skipHello)
         {
@@ -27,14 +27,21 @@ public class BotfProgram : BotController
 
         if(botOptions == null && builder.Configuration["bot"] != null)
         {
-            //TODO: check the bot section, it should be an object
-            botOptions = builder.Configuration.GetSection("bot").Get<BotfOptions>();
+            var section = builder.Configuration.GetSection("bot");
+            botOptions = section.Get<BotfOptions>();
         }
 
         var connectionString = builder.Configuration["botf"];
         if (botOptions == null && connectionString != null)
         {
             botOptions = ConnectionString.Parse(connectionString);
+        }
+        
+        if(botOptions == null)
+        {
+            throw new BotfException("Configuration is not passed. Check the appsettings*.json.\n" +
+                "There must be configuration object like `{ \"bot\": { \"Token\": \"BotToken...\" } }`\n" +
+                "Or connection string(in root) like `{ \"botf\": \"bot_token?key=value\" }`");
         }
 
         builder.Services.AddBotf(botOptions);

@@ -7,3 +7,5 @@
 **/db.sqlite
 /Examples/Deployf.Botf.ReminderBot/Hangfire.db
 **/publish
+.DS_Store
+**/.DS_Store

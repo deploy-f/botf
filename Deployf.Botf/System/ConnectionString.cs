@@ -7,8 +7,7 @@ public class ConnectionString
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="Exception"></exception>
+    /// <exception cref="BotfException"></exception>
     public static BotfOptions Parse(string value)
     {
         if(string.IsNullOrEmpty(value))
@@ -26,7 +25,7 @@ public class ConnectionString
         }
         else
         {
-            throw new ArgumentException();
+            throw new BotfException("Connection string for BotF (configuration string) is empty or has only whitespaces.");
         }
 
         if(main.Length == 1)
@@ -40,7 +39,7 @@ public class ConnectionString
             var cortage = kv.Split('=', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             if(cortage == null || cortage.Length != 2)
             {
-                throw new Exception("Botf connection string is wrong");
+                throw new BotfException("Botf connection string is wrong. It must have format like `bot_token?key1=value1&key2=value2..`");
             }
 
             switch (cortage[0])
@@ -53,11 +52,19 @@ public class ConnectionString
                     {
                         options.AutoSend = autosend;
                     }
+                    else
+                    {
+                        throw new BotfException("`autosend` configuration option has wrong format, it should be a bool convertable value like true|false|1|0|True|False");
+                    }
                     break;
                 case "group_mode":
                     if (bool.TryParse(cortage[1], out var groupMode))
                     {
                         options.HandleOnlyMentionedInGroups = groupMode;
+                    }
+                    else
+                    {
+                        throw new BotfException("`group_mode` configuration option has wrong format, it should be a bool convertable value like true|false|1|0|True|False");
                     }
                     break;
                 case "webhook":
@@ -70,6 +77,10 @@ public class ConnectionString
                     if (bool.TryParse(cortage[1], out var autoclean))
                     {
                         options.AutoCleanReplyKeyboard = autoclean;
+                    }
+                    else
+                    {
+                        throw new BotfException("`autoclean` configuration option has wrong format, it should be a bool convertable value like true|false|1|0|True|False");
                     }
                     break;
                 case "chain_timeout":

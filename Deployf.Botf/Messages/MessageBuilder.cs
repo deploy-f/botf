@@ -9,7 +9,7 @@ public class MessageBuilder
     public long ChatId { get; private set; }
     public StringBuilder BufferedMessage { get; private set; } = new StringBuilder();
     public IReplyMarkup? Markup { get; set; }
-    public string PhotoUrl { get; set; }
+    public string? PhotoUrl { get; set; }
     public List<List<InlineKeyboardButton>>? Reply { get; set; }
     public List<List<KeyboardButton>>? Keyboard { get; set; }
     public int ReplyToMessageId { get; set; } = 0;
