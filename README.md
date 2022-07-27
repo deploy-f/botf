@@ -14,11 +14,12 @@ BotF has next features:
 ⚒️ automatic creating of command menu  
 🗓️ integrated DateTime picker  
 📤 auto sending  
+📲 webapp native support  
 🚤 good performance  
 
 ## Documentaion
 
- 🔜 Documentation is under developement. We will push it here in the readme file soon.
+ 🔜 Documentation is under developement. We will push it here in the readme file soon. Feel free to ask us your questions in community chat in telegram [![Telegram Group](https://img.shields.io/endpoint?url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fbotf_community)](https://t.me/botf_community)
 
  ▶️ There is a good video on youtube https://www.youtube.com/watch?v=hieLnm9wO6s
 
