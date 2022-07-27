@@ -22,6 +22,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+        include-prerelease: true
     
     - name: Get Build Version
       run: |
@@ -36,12 +42,6 @@ jobs:
 
     - name: Restore dependencies
       run: nuget restore $SOLUTION
-
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 6.0.x
-        include-prerelease: true
 
     - name: Build
       run: dotnet build $SOLUTION --configuration $BUILD_CONFIG -p:Version=$BUILD_VERSION --no-restore
