@@ -216,7 +216,7 @@ public static class StartupExtensions
         var conf = app.ApplicationServices.GetRequiredService<BotfOptions>();
         app.Map((PathString)conf.WebhookPath, builder => 
         {
-            var type = Type.GetType("Telegram.Bot.Framework.TelegramBotMiddleware`1[Deployf.Botf.BotfBot], Telegram.Bot.Framework");
+            var type = typeof(Telegram.Bot.Framework.TelegramBotMiddleware<BotfBot>);;
             builder.UseMiddleware(type!, new [] { updateDelegate });
         });
         return app;
