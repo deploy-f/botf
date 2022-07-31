@@ -23,9 +23,18 @@ public class BotControllersExceptionMiddleware : IUpdateHandler
         }
         catch (UnauthorizedAccessException ex)
         {
-            if (_handlers.TryGetValue(Handle.Unauthorized, out var controller))
+            var handlers = _handlers.TryFindHandlers(Handle.Unauthorized, context).ToList();
+
+            if (handlers.Count > 0)
             {
-                await _invoker.Invoke(context, cancellationToken, controller);
+                foreach(var handler in handlers)
+                {
+                    if(context.IsHandlingStopRequested())
+                    {
+                        break;
+                    }
+                    await _invoker.Invoke(context, cancellationToken, handler);
+                }
             }
             else
             {
@@ -39,19 +48,28 @@ public class BotControllersExceptionMiddleware : IUpdateHandler
 
         async Task ProcessException(Exception ex)
         {
-            if (!_handlers.TryGetValue(Handle.Exception, out var controller))
+            var handlers = _handlers.TryFindHandlers(Handle.Exception, context).ToList();
+
+            if (handlers.Count == 0)
             {
                 _logger.LogError(ex, "unhandled exception");
                 return;
             }
 
-            if (controller.GetParameters().Length == 0)
+            foreach(var handler in handlers)
             {
-                await _invoker.Invoke(context, cancellationToken, controller);
-            }
-            else
-            {
-                await _invoker.Invoke(context, cancellationToken, controller, ex);
+                if(context.IsHandlingStopRequested())
+                {
+                    break;
+                }
+                if (handler.GetParameters().Length == 0)
+                {
+                    await _invoker.Invoke(context, cancellationToken, handler);
+                }
+                else
+                {
+                    await _invoker.Invoke(context, cancellationToken, handler, ex);
+                }
             }
         }
     }

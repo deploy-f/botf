@@ -30,9 +30,14 @@ public class BotControllersBeforeAllMiddleware : IUpdateHandler
             return;
         }
 
-        if (_handlers.TryGetValue(Handle.BeforeAll, out var controller))
+        var handlers = _handlers.TryFindHandlers(Handle.BeforeAll, context);
+        foreach(var handler in handlers)
         {
-            await _invoker.Invoke(context, cancellationToken, controller);
+            if(context.IsHandlingStopRequested())
+            {
+                break;
+            }
+            await _invoker.Invoke(context, cancellationToken, handler);
         }
 
         await next(context, cancellationToken);

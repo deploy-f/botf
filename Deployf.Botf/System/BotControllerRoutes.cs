@@ -99,9 +99,99 @@ public class BotControllerStates : BotControllerMap<Type>
     }
 }
 
-public class BotControllerHandlers : BotControllerMap<Handle>
+public delegate bool ActionFilter(IUpdateContext ctx);
+
+public class HandlerItem
 {
-    public BotControllerHandlers(IDictionary<Handle, MethodInfo> data) : base(data)
+    public Handle Handler { get; set; }
+    public ActionFilter? Filter { get; set; }
+    public MethodInfo TargetMethod { get; set; }
+
+    public HandlerItem(Handle handler, MethodInfo targetMethod, ActionFilter? filter = null)
     {
+        Handler = handler;
+        Filter = filter;
+        TargetMethod = targetMethod;
+    }
+
+    public bool TryFilter(IUpdateContext context)
+    {
+        if(Filter == null)
+        {
+            return true;
+        }
+
+        return Filter(context);
+    }
+}
+
+public class BotControllerHandlers
+{
+    readonly List<HandlerItem> Handlers;
+    readonly Dictionary<Handle, List<HandlerItem>> LookupTable;
+
+    public BotControllerHandlers(IEnumerable<HandlerItem> data)
+    {
+        Handlers = new List<HandlerItem>(data);
+        LookupTable = BuildLookupTable();
+    }
+
+    private Dictionary<Handle, List<HandlerItem>> BuildLookupTable()
+    {
+        var table = new Dictionary<Handle, List<HandlerItem>>();
+        foreach(var item in Handlers)
+        {
+            if(table.TryGetValue(item.Handler, out var lookup))
+            {
+                lookup.Add(item);
+            }
+            else
+            {
+                lookup = new List<HandlerItem>();
+                lookup.Add(item);
+                table[item.Handler] = lookup;
+            }
+        }
+
+        return table;
+    }
+
+    public IEnumerable<MethodInfo> TryFindHandlers(Handle handle, IUpdateContext context)
+    {
+        foreach (var item in Handlers)
+        {
+            if(item.Handler != handle)
+            {
+                continue;
+            }
+
+            if(item.Filter == null)
+            {
+                yield return item.TargetMethod;
+                continue;
+            }
+
+            if(item.Filter(context))
+            {
+                yield return item.TargetMethod;
+            }
+        }
+    }
+
+    public IReadOnlyList<HandlerItem>? GetHandlers(Handle handle)
+    {
+        if(LookupTable.TryGetValue(handle, out var lookup))
+        {
+            return lookup;
+        }
+
+        return null;
+    }
+
+    public IEnumerable<Type> ControllerTypes()
+    {
+        return Handlers
+            .Select(c => c.TargetMethod.DeclaringType!)
+            .Distinct();
     }
 }

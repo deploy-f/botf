@@ -5,6 +5,9 @@ namespace Deployf.Botf;
 
 public static class UpdateContextExtensions
 {
+    private const string STOP_HANDLING_KEY = "$_StopHandling";
+    private static readonly object _handlingStopMarkerItem = new object();
+
     public static long GetChatId(this IUpdateContext context)
     {
         return context.Update!.Message!.Chat.Id;
@@ -100,5 +103,14 @@ public static class UpdateContextExtensions
                ?? context.Update.EditedMessage?.From?.LastName;
 
         return first + " " + last;
+    }
+
+    public static void StopHandling(this IUpdateContext context)
+    {
+        context.Items[STOP_HANDLING_KEY] = _handlingStopMarkerItem;
+    }
+    public static bool IsHandlingStopRequested(this IUpdateContext context)
+    {
+        return context.Items.ContainsKey(STOP_HANDLING_KEY);
     }
 }

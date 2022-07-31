@@ -68,15 +68,60 @@ public class BotControllerFactory
 
     public static BotControllerHandlers MakeHandlers()
     {
-        var keys = _controllers
+        var handlers = _controllers
             .Select(c => c.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                 .Where(c => c.GetCustomAttribute<OnAttribute>() != null)
-                .Select(c => (type: c.GetCustomAttribute<OnAttribute>()!.Handler, m: c)))
+                .Select(c => (on: c.GetCustomAttribute<OnAttribute>()!, m: c)))
 
             .SelectMany(c => c)
+            .OrderBy(c => c.on.Filter == null)
+            .ThenByDescending(c => c.on.Order)
 
-            .ToDictionary(c => c.type, c => c.m);
+            .Select(c => new HandlerItem(c.on.Handler, c.m, GetFilter(c.m, c.on.Filter)));
 
-        return new BotControllerHandlers(keys);
+        return new BotControllerHandlers(handlers);
+
+        static ActionFilter? GetFilter(MethodInfo target, string? filterMethod)
+        {
+            if(filterMethod == null)
+            {
+                return null;
+            }
+
+            if(filterMethod.Contains('.'))
+            {
+                var typeName = filterMethod.Substring(0, filterMethod.LastIndexOf('.'));
+                var methodName = filterMethod.Substring(filterMethod.LastIndexOf('.') + 1);
+
+                var type = Type.GetType(typeName);
+                if(type == null)
+                {
+                    throw new BotfException($"Filter method name is wrong. Can't find class type `{typeName}`. Action method is `{target.DeclaringType!.Name}.{target.Name}`");
+                }
+
+                var method = type.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                CheckFilterMethod(method, methodName, typeName, target);
+
+                return (ActionFilter)ActionFilter.CreateDelegate(typeof(ActionFilter), method!);
+            }
+            
+            var methodInTarget = target.DeclaringType!.GetMethod(filterMethod, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            CheckFilterMethod(methodInTarget, filterMethod, target.DeclaringType.Name, target);
+
+            return (ActionFilter)ActionFilter.CreateDelegate(typeof(ActionFilter), methodInTarget!);
+
+            static void CheckFilterMethod(MethodInfo? filter, string methodName, string typeName, MethodInfo target)
+            {
+                if(filter == null
+                    || filter.ReturnType != typeof(bool)
+                    || filter.GetParameters().Length != 1
+                    || filter.GetParameters()[0].ParameterType != typeof(IUpdateContext))
+                {
+                    throw new BotfException($"Filter method name is wrong. Can't find method `{methodName}` in type `{typeName}`. "
+                        + "The method must be static and return bool value and receive single argument with type `IUpdateContext`. "
+                        + "Action method is `{target.DeclaringType!.Name}.{target.Name}`");
+                }
+            }
+        }
     }
 }

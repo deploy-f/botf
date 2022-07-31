@@ -119,11 +119,24 @@ public abstract class BotController
 
         async ValueTask CallClear()
         {
-            var handlers = Context!.Services.GetRequiredService<BotControllerHandlers>();
-            if(handlers.TryGetValue(Handle.ClearState, out var method))
+            var handlersContainer = Context!.Services.GetRequiredService<BotControllerHandlers>();
+            var lookup = handlersContainer.GetHandlers(Handle.ClearState);
+            if(lookup == null)
             {
-                var invoker = Context!.Services.GetRequiredService<BotControllersInvoker>();
-                await invoker.Invoke(Context, CancelToken, method);
+                return;
+            }
+
+            var invoker = Context.Services.GetRequiredService<BotControllersInvoker>();
+            foreach (var handler in lookup)
+            {
+                if(Context.IsHandlingStopRequested())
+                {
+                    break;
+                }
+                if(handler.TryFilter(Context))
+                {
+                    await invoker.Invoke(Context, CancelToken, handler.TargetMethod);
+                }
             }
         }
     }

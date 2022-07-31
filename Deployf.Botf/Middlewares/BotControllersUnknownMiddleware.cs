@@ -15,11 +15,20 @@ public class BotControllersUnknownMiddleware : IUpdateHandler
 
     public async Task HandleAsync(IUpdateContext context, UpdateDelegate next, CancellationToken cancellationToken)
     {
-        if (_handlers.TryGetValue(Handle.Unknown, out var controller))
+        var handlers = _handlers.TryFindHandlers(Handle.Unknown, context);
+        var processed = false;
+        
+        foreach(var handle in handlers)
         {
-            await _invoker.Invoke(context, cancellationToken, controller);
+            if(context.IsHandlingStopRequested())
+            {
+                break;
+            }
+            await _invoker.Invoke(context, cancellationToken, handle);
+            processed = true;
         }
-        else
+
+        if (!processed)
         {
             await next(context, cancellationToken);
         }
