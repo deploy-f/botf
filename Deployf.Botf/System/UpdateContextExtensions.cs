@@ -110,7 +110,7 @@ public static class UpdateContextExtensions
                     ?? context.Update.EditedMessage?.From?.LanguageCode
                     ?? context.Update.CallbackQuery?.From?.LanguageCode
                     ?? context.Update.InlineQuery?.From?.LanguageCode
-                    ?? "en";
+                    ?? String.Empty;
 
         return value;
     }
