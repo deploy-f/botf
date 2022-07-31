@@ -104,6 +104,16 @@ public static class UpdateContextExtensions
 
         return first + " " + last;
     }
+    public static string GetLangCode(this IUpdateContext context)
+    {
+        var value = context.Update.Message?.From?.LanguageCode
+                    ?? context.Update.EditedMessage?.From?.LanguageCode
+                    ?? context.Update.CallbackQuery?.From?.LanguageCode
+                    ?? context.Update.InlineQuery?.From?.LanguageCode
+                    ?? "en";
+
+        return value;
+    }
 
     public static void StopHandling(this IUpdateContext context)
     {
