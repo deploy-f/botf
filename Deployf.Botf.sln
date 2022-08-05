@@ -36,6 +36,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deployf.Botf.WebAppExample"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deployf.Botf.UnknownHandlingExample", "Examples\Deployf.Botf.UnknownHandlingExample\Deployf.Botf.UnknownHandlingExample.csproj", "{26897D3D-FDA0-4CA0-89AE-1B5EC777593B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deployf.Botf.ActionsAndQueryExample", "Examples\Deployf.Botf.ActionsAndQueryExample\Deployf.Botf.ActionsAndQueryExample.csproj", "{171EAF49-EE72-4499-A841-A7E4EDC7D4FF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,6 +92,10 @@ Global
 		{26897D3D-FDA0-4CA0-89AE-1B5EC777593B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{26897D3D-FDA0-4CA0-89AE-1B5EC777593B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{26897D3D-FDA0-4CA0-89AE-1B5EC777593B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{171EAF49-EE72-4499-A841-A7E4EDC7D4FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{171EAF49-EE72-4499-A841-A7E4EDC7D4FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{171EAF49-EE72-4499-A841-A7E4EDC7D4FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{171EAF49-EE72-4499-A841-A7E4EDC7D4FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -106,6 +112,7 @@ Global
 		{F3B7EFA5-02B0-4970-9FAA-E4DD7D44C45E} = {90A07D9F-B417-4D28-BC58-5D987CB90430}
 		{3C21F035-1A68-4782-B985-7BEB3600B501} = {90A07D9F-B417-4D28-BC58-5D987CB90430}
 		{26897D3D-FDA0-4CA0-89AE-1B5EC777593B} = {90A07D9F-B417-4D28-BC58-5D987CB90430}
+		{171EAF49-EE72-4499-A841-A7E4EDC7D4FF} = {90A07D9F-B417-4D28-BC58-5D987CB90430}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {558E8FF9-5AE8-4471-BF84-D79F5B0E91FB}
