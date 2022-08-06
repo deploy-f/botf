@@ -12,13 +12,13 @@ public abstract class BotController
     private const string LAST_MESSAGE_ID_KEY = "$last_message_id";
 
     public UserClaims User { get; set; } = new UserClaims();
-    protected long ChatId { get; private set; }
-    protected long FromId { get; private set; }
-    protected IUpdateContext Context { get; private set; } = null!;
+    public long ChatId { get; private set; }
+    public long FromId { get; private set; }
+    public IUpdateContext Context { get; private set; } = null!;
     protected CancellationToken CancelToken { get; private set; }
     protected ITelegramBotClient Client { get; set; } = null!;
     protected MessageBuilder Message { get; set; } = new MessageBuilder();
-    protected IKeyValueStorage? Store { get; set; }
+    public IKeyValueStorage? Store { get; set; }
 
     protected bool IsDirty
     {
@@ -167,13 +167,17 @@ public abstract class BotController
         await controller.OnAfterCall();
     }
 
-    public virtual Task OnBeforeCall()
+    public virtual async Task OnBeforeCall()
     {
-        return Task.CompletedTask;
+        var stateService = new BotControllerStateService();
+        await stateService.Load(this);
     }
 
     public virtual async Task OnAfterCall()
     {
+        var stateService = new BotControllerStateService();
+        await stateService.Save(this);
+
         if (!(Context!.Bot is BotfBot bot))
         {
             return;

@@ -43,6 +43,15 @@ class ActionAndQueryController : BotController
     [Action]
     void ActionWithStoredValue(ExampleClass instance)
     {
+        if(instance == null)
+        {
+            instance = new ExampleClass()
+            {
+                IntField = -1,
+                StringProp = "The data was lost :( probably you had rebooted the application"
+            };
+        }
+
         PushL("Action with class as a parameter");
         PushL($"IntField: {instance.IntField}");
         PushL($"StringProp: {instance.StringProp}");
