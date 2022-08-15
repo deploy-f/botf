@@ -26,7 +26,7 @@ public class ArgumentBinder
                 {
                     bindings.Add(await binder.Decode(p, arg, ctx));
                     found = true;
-                    continue;
+                    break;
                 }
             }
 
@@ -61,7 +61,7 @@ public class ArgumentBinder
                 {
                     bindings.Add(binder.Encode(p, arg, ctx));
                     found = true;
-                    continue;
+                    break;
                 }
             }
 

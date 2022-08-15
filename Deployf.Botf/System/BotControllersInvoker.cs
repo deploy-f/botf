@@ -20,7 +20,7 @@ public class BotControllersInvoker
     {
         var controller = (BotController)_services.GetRequiredService(method.DeclaringType!);
         controller.Init(ctx, token);
-        await InvokeInternal(controller, method, args, ctx);
+        await InvokeInternal(controller, method, args, ctx, false);
     }
 
     public async ValueTask<bool> Invoke(IUpdateContext context)
@@ -35,14 +35,15 @@ public class BotControllersInvoker
 
         var method = (MethodInfo)context.Items["action"];
         var args = (object[])context.Items["args"];
-        await InvokeInternal(controller, method, args, context);
+        var skipBinding = context.Items.ContainsKey("skip_binding_marker");
+        await InvokeInternal(controller, method, args, context, !skipBinding);
 
         return true;
     }
 
-    private async ValueTask<object?> InvokeInternal(BotController controller, MethodInfo method, object[] args, IUpdateContext ctx)
+    private async ValueTask<object?> InvokeInternal(BotController controller, MethodInfo method, object[] args, IUpdateContext ctx, bool bind = true)
     {
-        var typedParams = await _binder.Bind(method, args, ctx);
+        var typedParams = bind ? await _binder.Bind(method, args, ctx) : args;
 
         _log.LogDebug("Begin execute action {Controller}.{Method}. Arguments: {@Args}",
             method.DeclaringType!.Name,

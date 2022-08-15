@@ -8,13 +8,13 @@ public static class NumberExtensions
         {
             base64 += "===".Substring(0, 4 - (base64.Length % 4));
         }
-        var bytes = Convert.FromBase64String(base64);
+        var bytes = Convert.FromBase64String(base64.Replace("-", "/"));
         return BitConverter.ToInt64(bytes);
     }
 
     public static string Base64(this long value)
     {
         var bytes = BitConverter.GetBytes(value);
-        return Convert.ToBase64String(bytes).Replace("=", "");
+        return Convert.ToBase64String(bytes).Replace("/", "-").Replace("=", "");
     }
 }

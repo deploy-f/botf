@@ -118,6 +118,8 @@ public static class StartupExtensions
         services.AddTransient(ctx => ctx.GetRequiredService<BotfBot>().Client);
         services.AddTransient<MessageSender>();
 
+        services.AddTransient<IKeyGenerator, RandomKeyGenerator>();
+
         services.AddSingleton<IArgumentBind, ArgumentBindInt32>();
         services.AddSingleton<IArgumentBind, ArgumentBindInt64>();
         services.AddSingleton<IArgumentBind, ArgumentBindBoolean>();
@@ -127,6 +129,7 @@ public static class StartupExtensions
         services.AddSingleton<IArgumentBind, ArgumentBindEnum>();
         services.AddSingleton<IArgumentBind, ArgumentBindGuid>();
         services.AddSingleton<IArgumentBind, ArgumentAttributeBindState>();
+        services.AddSingleton<IArgumentBind, ArgumentBindBridge>();
         services.AddSingleton<ArgumentBinder>();
 
         return services;

@@ -43,6 +43,7 @@ public class BotControllersFSMMiddleware : IUpdateHandler
                 context.Items["args"] = new object[] { state };
                 context.Items["action"] = value;
                 context.Items["controller"] = controller;
+                context.Items["skip_binding_marker"] = true;
 
                 afterNext = async () =>
                 {

@@ -1,6 +1,6 @@
 ﻿namespace Deployf.Botf;
 
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Parameter | AttributeTargets.Field | AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
 public sealed class StateAttribute : Attribute
 {
     public readonly string? Name;
