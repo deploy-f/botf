@@ -40,7 +40,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deployf.Botf.ActionsAndQuer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deployf.Botf.ControllerStateExample", "Examples\Deployf.Botf.ControllerStateExample\Deployf.Botf.ControllerStateExample.csproj", "{88DA6CD9-E658-4B6E-8657-734CA195F783}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deployf.Botf.UnknownHandlingExample", "Examples\Deployf.Botf.SendAndUpdateMessagesExample\Deployf.Botf.UnknownHandlingExample.csproj", "{97A62A25-904D-492D-9AB5-28B8CCFC2748}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deployf.Botf.SendAndUpdateMessagesExample", "Examples\Deployf.Botf.SendAndUpdateMessagesExample\Deployf.Botf.SendAndUpdateMessagesExample.csproj", "{97A62A25-904D-492D-9AB5-28B8CCFC2748}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
