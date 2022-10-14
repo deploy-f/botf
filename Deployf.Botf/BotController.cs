@@ -191,19 +191,19 @@ public abstract class BotController
     #endregion
 
     #region sending
-    public async Task SendOrUpdate()
+    public async Task<Message?> SendOrUpdate()
     {
         if (Context!.Update.Type == UpdateType.CallbackQuery && Message.Markup is not ReplyKeyboardMarkup)
         {
-            await Update();
+            return await Update();
         }
         else
         {
-            await Send();
+            return await Send();
         }
     }
 
-    protected async Task Send(string text, ParseMode mode)
+    protected async Task<Message> Send(string text, ParseMode mode)
     {
         IsDirty = false;
         Message message;
@@ -231,11 +231,12 @@ public abstract class BotController
         await TryCleanLastMessageReplyKeyboard();
         await TrySaveLastMessageId(Message.Markup as InlineKeyboardMarkup, message);
         ClearMessage();
+        return message;
     }
 
-    public async Task UpdateMarkup(InlineKeyboardMarkup markup)
+    public async Task<Message> UpdateMarkup(InlineKeyboardMarkup markup)
     {
-        await Client.EditMessageReplyMarkupAsync(
+        return await Client.EditMessageReplyMarkupAsync(
             Context!.GetSafeChatId()!,
             Context!.GetSafeMessageId().GetValueOrDefault(),
             markup,
@@ -243,7 +244,7 @@ public abstract class BotController
         );
     }
 
-    public async Task Update(InlineKeyboardMarkup? markup = null, string? text = null, ParseMode mode = ParseMode.Html)
+    public async Task<Message> Update(InlineKeyboardMarkup? markup = null, string? text = null, ParseMode mode = ParseMode.Html)
     {
         var markupValue = markup ?? Message.Markup as InlineKeyboardMarkup;
         IsDirty = false;
@@ -257,11 +258,12 @@ public abstract class BotController
         );
         await TrySaveLastMessageId(markupValue, message);
         ClearMessage();
+        return message;
     }
 
-    protected async Task Send(string text)
+    protected async Task<Message> Send(string text)
     {
-        await Send(text, ParseMode.Html);
+        return await Send(text, ParseMode.Html);
     }
 
     protected async Task AnswerCallback(string? text = null)
@@ -271,13 +273,15 @@ public abstract class BotController
             cancellationToken: CancelToken);
     }
 
-    public async Task Send()
+    public async Task<Message?> Send()
     {
         var text = Message.Message;
         if (text != null)
         {
-            await Send(text);
+            return await Send(text);
         }
+
+        return null;
     }
 
     private async ValueTask TrySaveLastMessageId(InlineKeyboardMarkup? markupValue, Telegram.Bot.Types.Message message)
