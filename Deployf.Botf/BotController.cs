@@ -19,6 +19,7 @@ public abstract class BotController
     protected ITelegramBotClient Client { get; set; } = null!;
     protected MessageBuilder Message { get; set; } = new MessageBuilder();
     public IKeyValueStorage? Store { get; set; }
+    public int? MessageId { get; set; }
 
     protected bool IsDirty
     {
@@ -210,7 +211,7 @@ public abstract class BotController
         if(Message.PhotoUrl == null)
         {
             message = await Client.SendTextMessageAsync(
-                Context!.GetSafeChatId()!,
+                ChatId == 0 ? Context!.GetSafeChatId()! : ChatId,
                 text,
                 ParseMode.Html,
                 replyMarkup: Message.Markup,
@@ -220,7 +221,7 @@ public abstract class BotController
         else
         {
             message = await Client.SendPhotoAsync(
-                Context!.GetSafeChatId()!,
+                ChatId == 0 ? Context!.GetSafeChatId()! : ChatId,
                 Message.PhotoUrl,
                 text,
                 ParseMode.Html,
@@ -237,8 +238,8 @@ public abstract class BotController
     public async Task<Message> UpdateMarkup(InlineKeyboardMarkup markup)
     {
         return await Client.EditMessageReplyMarkupAsync(
-            Context!.GetSafeChatId()!,
-            Context!.GetSafeMessageId().GetValueOrDefault(),
+            ChatId == 0 ? Context!.GetSafeChatId()! : ChatId,
+            MessageId ?? Context!.GetSafeMessageId().GetValueOrDefault(),
             markup,
             cancellationToken: CancelToken
         );
@@ -249,8 +250,8 @@ public abstract class BotController
         var markupValue = markup ?? Message.Markup as InlineKeyboardMarkup;
         IsDirty = false;
         var message = await Client.EditMessageTextAsync(
-            Context!.GetSafeChatId()!,
-            Context!.GetSafeMessageId().GetValueOrDefault(),
+            ChatId == 0 ? Context!.GetSafeChatId()! : ChatId,
+            MessageId ?? Context!.GetSafeMessageId().GetValueOrDefault(),
             text ?? Message.Message,
             parseMode: mode,
             replyMarkup: markupValue,
