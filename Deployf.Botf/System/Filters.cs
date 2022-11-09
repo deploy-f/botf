@@ -9,6 +9,7 @@ public static class Filters
     public const string Text = $"{_BASE}.{nameof(FiltersImpl.FilterNewTextMessage)}";
     public const string Messages = $"{_BASE}.{nameof(FiltersImpl.FilterAllMessages)}";
     public const string CallbackQuery = $"{_BASE}.{nameof(FiltersImpl.FilterCallbackQuery)}";
+    public const string NotGlobalState = $"{_BASE}.{nameof(FiltersImpl.FilterNotGlobalState)}";
     public const string InlineQuery = $"{_BASE}.{nameof(FiltersImpl.FilterInlineQuery)}";
     public const string Command = $"{_BASE}.{nameof(FiltersImpl.FilterCommands)}";
     public const string Media = $"{_BASE}.{nameof(FiltersImpl.FilterMedia)}";
@@ -54,6 +55,25 @@ public static class FiltersImpl
         }
 
         return false;
+    }
+
+    public static bool FilterGlobalState(IUpdateContext ctx)
+    {
+        var Store = ctx.Services.GetRequiredService<IKeyValueStorage>();
+        var result = Store!.Contain(ctx.GetSafeUserId().GetValueOrDefault(), Consts.GLOBAL_STATE);
+        if(result.IsCompleted)
+        {
+            return result.Result;
+        }
+        else
+        {
+            return result.AsTask().GetAwaiter().GetResult();
+        }
+    }
+
+    public static bool FilterNotGlobalState(IUpdateContext ctx)
+    {
+        return !FilterGlobalState(ctx);
     }
 
     public static bool FilterInlineQuery(IUpdateContext ctx)
