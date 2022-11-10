@@ -77,40 +77,103 @@ public class BotControllerFactory
             .OrderBy(c => c.on.Filter == null)
             .ThenByDescending(c => c.on.Order)
 
-            .Select(c => new HandlerItem(c.on.Handler, c.m, GetFilter(c.m, c.on.Filter)));
+            .Select(c => new HandlerItem(c.on.Handler, c.m, GetFilter(c.m, c.on)));
 
         return new BotControllerHandlers(handlers);
 
-        static ActionFilter? GetFilter(MethodInfo target, string? filterMethod)
+        static ActionFilter? GetFilter(MethodInfo target, OnAttribute on)
         {
-            if(filterMethod == null)
+            var filters = target.GetCustomAttributes<FilterAttribute>().ToArray();
+
+            if(filters.Length == 0 && on.Filter == null)
             {
                 return null;
             }
 
-            if(filterMethod.Contains('.'))
+            if(filters.Length != 0 && on.Filter != null)
             {
-                var typeName = filterMethod.Substring(0, filterMethod.LastIndexOf('.'));
-                var methodName = filterMethod.Substring(filterMethod.LastIndexOf('.') + 1);
-
-                var type = Type.GetType(typeName);
-                if(type == null)
-                {
-                    throw new BotfException($"Filter method name is wrong. Can't find class type `{typeName}`. Action method is `{target.DeclaringType!.Name}.{target.Name}`");
-                }
-
-                var method = type.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-                CheckFilterMethod(method, methodName, typeName, target);
-
-                return (ActionFilter)ActionFilter.CreateDelegate(typeof(ActionFilter), method!);
+                throw new BotfException("Use only Filter() attribute to pass filter methods of handlers");
             }
-            
-            var methodInTarget = target.DeclaringType!.GetMethod(filterMethod, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-            CheckFilterMethod(methodInTarget, filterMethod, target.DeclaringType.Name, target);
 
-            return (ActionFilter)ActionFilter.CreateDelegate(typeof(ActionFilter), methodInTarget!);
+            if(on.Filter != null)
+            {
+                var methodInTarget = FilterAttribute.GetMethod(on.Filter, target.DeclaringType);
+                CheckFilterMethod(methodInTarget, on.Filter, target.DeclaringType!.Name);
+                return (ActionFilter)ActionFilter.CreateDelegate(typeof(ActionFilter), methodInTarget!);
+            }
 
-            static void CheckFilterMethod(MethodInfo? filter, string methodName, string typeName, MethodInfo target)
+            if(filters.Length == 0)
+            {
+                return null;
+            }
+
+            ActionFilter? result = null;
+
+            for (int i = 0; i < filters.Length; i++)
+            {
+                var filter = filters[i];
+                var method = filter.GetMethod(target.DeclaringType);
+                CheckFilterMethod(method, filter.Filter, target.DeclaringType!.Name);
+                var action = (ActionFilter)ActionFilter.CreateDelegate(typeof(ActionFilter), method!);
+
+                if(result == null)
+                {
+                    if(filter.Operation == FilterAttribute.BoolOp.Not)
+                    {
+                        result = (IUpdateContext ctx) =>
+                        {
+                            ctx.SetFilterParameter(filter.Param);
+                            return !action(ctx);
+                        };
+                    }
+                    else
+                    {
+                        result = (IUpdateContext ctx) =>
+                        {
+                            ctx.SetFilterParameter(filter.Param);
+                            return action(ctx);
+                        };
+                    }
+                }
+                else
+                {
+                    var currentResult = result;
+                    result = (IUpdateContext ctx) =>
+                    {
+                        var leftResult = currentResult(ctx);
+
+                        ctx.SetFilterParameter(filter.Param);
+                        var rightResult = action(ctx);
+
+                        if(filter.Operation == FilterAttribute.BoolOp.And)
+                        {
+                            return leftResult && rightResult;
+                        }
+                        else if(filter.Operation == FilterAttribute.BoolOp.Or)
+                        {
+                            return leftResult || rightResult;
+                        }
+                        else if(filter.Operation == FilterAttribute.BoolOp.AndNot)
+                        {
+                            return leftResult && !rightResult;
+                        }
+                        else if(filter.Operation == FilterAttribute.BoolOp.OrNot)
+                        {
+                            return leftResult || !rightResult;
+                        }
+                        else if(filter.Operation == FilterAttribute.BoolOp.Not)
+                        {
+                            throw new NotSupportedException($"Operation NOT is supported only for first filter");
+                        }
+
+                        throw new NotSupportedException($"Operation type {filter.Operation} is not supported");
+                    };
+                }
+            }
+
+            return result;
+
+            static void CheckFilterMethod(MethodInfo? filter, string methodName, string typeName)
             {
                 if(filter == null
                     || filter.ReturnType != typeof(bool)

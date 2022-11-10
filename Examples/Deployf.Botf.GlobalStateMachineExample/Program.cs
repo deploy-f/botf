@@ -113,6 +113,15 @@ class State1Controller : BotControllerState<State1>
     {
         Push($"This is state 1");
     }
+
+    [On(Handle.Unknown, 1)]
+    [Filter(Filters.CurrentGlobalState)]
+    void UnknownForThisState()
+    {
+        Reply();
+        Push("Unknown command for State1");
+        Context.StopHandling();
+    }
 }
 
 class State2Controller : BotControllerState<State2>

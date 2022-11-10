@@ -121,6 +121,8 @@ public class HandlerItem
             return true;
         }
 
+        context.SetCurrentHandler(this);
+
         return Filter(context);
     }
 }
@@ -165,13 +167,7 @@ public class BotControllerHandlers
                 continue;
             }
 
-            if(item.Filter == null)
-            {
-                yield return item.TargetMethod;
-                continue;
-            }
-
-            if(item.Filter(context))
+            if(item.TryFilter(context))
             {
                 yield return item.TargetMethod;
             }

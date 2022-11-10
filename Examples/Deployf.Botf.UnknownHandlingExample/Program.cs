@@ -15,7 +15,8 @@ class Program : BotfProgram
     }
 
     // The handler processes only unhandled clicks to the buttons
-    [On(Handle.Unknown, Filters.CallbackQuery)]
+    [On(Handle.Unknown)]
+    [Filter(Filters.CallbackQuery)]
     public void UnknownCallback()
     {
         PushL("Unknown callback");
@@ -35,7 +36,8 @@ class Program : BotfProgram
     // | -1         | HandlerUnderDefault |
     // 
     // Handler10(with 10 order) will be processed first, then Handler1, then DefaultHandler(without specefic order) and HandlerUnderDefault will be processed last
-    [On(Handle.Unknown, Filters.Command, 1)]
+    [On(Handle.Unknown, 1)]
+    [Filter(Filters.Command)]
     public void UnknownCommand()
     {
         Reply();
@@ -47,7 +49,8 @@ class Program : BotfProgram
     // To provide the filter-function into the Botf you can tell the name of the function.
     // You can use just identifier of the function inside the same class as the handler,
     // or provide full path to the method, with namespace and declared class (like YourFancyNamespace.YourClass.FilterFunctionName)
-    [On(Handle.Unknown, nameof(Filter), 1)]
+    [On(Handle.Unknown, 1)]
+    [Filter(nameof(Filter))]
     public void UnknownCustomFilter()
     {
         Reply();
@@ -72,7 +75,8 @@ class Program : BotfProgram
 
     // This handler will process all new text messages.
     // But if previus handler has called `Context.StopHandling()` it will not be handled.
-    [On(Handle.Unknown, Filters.Text)]
+    [On(Handle.Unknown)]
+    [Filter(Filters.Text)]
     public void UnknownNewTextHandler()
     {
         Reply();
@@ -80,6 +84,17 @@ class Program : BotfProgram
         Context.StopHandling();
     }
 
+    // This handler catch all messages that contains text pattern like "Hello ***!"
+    // And reply for it with "Hey!"
+    [On(Handle.Unknown, 5)]
+    [Filter(Filters.Text)]
+    [Filter(And: Filters.Regex, Param: "Hello .*!")]
+    public void UnknownTextHello()
+    {
+        Reply();
+        PushL("Hey!");
+        Context.StopHandling();
+    }
 
     // This handler will handle all other unhandled updates that was not handled yet. It's called as "general" handler
     [On(Handle.Unknown)]

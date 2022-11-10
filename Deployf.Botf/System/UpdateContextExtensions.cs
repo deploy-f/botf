@@ -6,6 +6,8 @@ namespace Deployf.Botf;
 public static class UpdateContextExtensions
 {
     private const string STOP_HANDLING_KEY = "$_StopHandling";
+    private const string CURRENT_HANDLER_KEY = "$_CurrentHandler";
+    private const string FILTER_PARAMETER_KEY = "$_FilterParameter";
     private static readonly object _handlingStopMarkerItem = new object();
 
     public static long GetChatId(this IUpdateContext context)
@@ -121,5 +123,47 @@ public static class UpdateContextExtensions
     public static bool IsHandlingStopRequested(this IUpdateContext context)
     {
         return context.Items.ContainsKey(STOP_HANDLING_KEY);
+    }
+
+    public static void SetCurrentHandler(this IUpdateContext context, HandlerItem? handler)
+    {
+        if(handler == null && context.Items.ContainsKey(CURRENT_HANDLER_KEY))
+        {
+            context.Items.Remove(CURRENT_HANDLER_KEY);
+        }
+        else if(handler != null)
+        {
+            context.Items[CURRENT_HANDLER_KEY] = handler;
+        }
+    }
+    public static HandlerItem? GetCurrentHandler(this IUpdateContext context)
+    {
+        if(context.Items.TryGetValue(CURRENT_HANDLER_KEY, out var handler) && handler != null && handler is HandlerItem result)
+        {
+            return result;
+        }
+
+        return null;
+    }
+
+    public static void SetFilterParameter(this IUpdateContext context, object? parameter)
+    {
+        if(parameter == null && context.Items.ContainsKey(FILTER_PARAMETER_KEY))
+        {
+            context.Items.Remove(FILTER_PARAMETER_KEY);
+        }
+        else if(parameter != null)
+        {
+            context.Items[FILTER_PARAMETER_KEY] = parameter;
+        }
+    }
+    public static object? GetFilterParameter(this IUpdateContext context)
+    {
+        if(context.Items.TryGetValue(FILTER_PARAMETER_KEY, out var parameter))
+        {
+            return parameter;
+        }
+
+        return null;
     }
 }
