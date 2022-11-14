@@ -9,6 +9,8 @@ public delegate RouteSkipDelegate? RouteSkipFactoryDelegate(bool hasStates, Meth
 public class BotControllerFactory
 {
     private static Type baseController { get; } = typeof(BotController);
+    
+    //TODO: make a check for controllers without Actions
     private static List<Type> _controllers { get; } = AppDomain.CurrentDomain.GetAssemblies()
             .SelectMany(c => c.GetTypes())
             .Where(c => !c.IsAbstract && baseController.IsAssignableFrom(c))
