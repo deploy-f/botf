@@ -79,6 +79,21 @@ public static class UpdateContextExtensions
     {
         return context!.Update!.CallbackQuery!.Message!.Chat.Id;
     }
+    
+    public static InlineQuery GetInlineQuery(this IUpdateContext context)
+    {
+        return context!.Update!.InlineQuery!;
+    }
+    
+    public static string GetInlineQueryId(this IUpdateContext context)
+    {
+        return context!.Update!.InlineQuery!.Id;
+    }
+    
+    public static string? GetSafeInlineQueryId(this IUpdateContext context)
+    {
+        return context!.Update!.InlineQuery?.Id;
+    }
 
     public static string? GetTypeValue(this IUpdateContext context)
     {

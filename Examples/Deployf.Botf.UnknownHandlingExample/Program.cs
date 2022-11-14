@@ -72,7 +72,16 @@ class Program : BotfProgram
 
         return message.Contains("filter");
     }
-
+    
+    [On(Handle.Unknown)]
+    [Filter(Filters.Contact)]
+    public void UnknownContactHandler()
+    {
+        Reply();
+        PushL("Thank you, I will add you to my contact list");
+        Context.StopHandling();
+    }
+    
     // This handler will process all new text messages.
     // But if previus handler has called `Context.StopHandling()` it will not be handled.
     [On(Handle.Unknown)]
