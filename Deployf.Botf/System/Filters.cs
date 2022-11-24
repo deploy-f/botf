@@ -14,6 +14,7 @@ public static class Filters
     public const string CurrentGlobalState = $"{_BASE}.{nameof(FiltersImpl.FilterCurrentGlobalState)}";
     public const string InlineQuery = $"{_BASE}.{nameof(FiltersImpl.FilterInlineQuery)}";
     public const string Contact = $"{_BASE}.{nameof(FiltersImpl.FilterContact)}";
+    public const string Location = $"{_BASE}.{nameof(FiltersImpl.FilterLocation)}";
     public const string Command = $"{_BASE}.{nameof(FiltersImpl.FilterCommands)}";
     public const string Media = $"{_BASE}.{nameof(FiltersImpl.FilterMedia)}";
     public const string Document = $"{_BASE}.{nameof(FiltersImpl.FilterDocument)}";
@@ -201,6 +202,15 @@ public static class FiltersImpl
         return update.Type == UpdateType.Message &&
                update.Message!.Type == MessageType.Contact &&
                update.Message.Contact != null;
+    }
+    
+    public static bool FilterLocation(IUpdateContext ctx)
+    {
+        var update = ctx.Update;
+
+        return update.Type == UpdateType.Message &&
+               update.Message!.Type == MessageType.Location &&
+               update.Message.Location != null;
     }
 
     public static bool FilterCommands(IUpdateContext ctx)
