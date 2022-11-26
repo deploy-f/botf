@@ -12,6 +12,11 @@ public static class UpdateContextExtensions
 
     public static long GetChatId(this IUpdateContext context)
     {
+        if (context.ChatId.HasValue)
+        {
+            return context.ChatId.Value;
+        }
+        
         return context.Update!.Message!.Chat.Id;
     }
 
@@ -22,6 +27,11 @@ public static class UpdateContextExtensions
 
     public static long? GetSafeChatId(this IUpdateContext context)
     {
+        if (context.ChatId.HasValue)
+        {
+            return context.ChatId.Value;
+        }
+        
         return context.Update.Message?.Chat.Id
                ?? context.Update.EditedMessage?.Chat.Id
                ?? context.Update.CallbackQuery?.Message?.Chat.Id
@@ -30,6 +40,10 @@ public static class UpdateContextExtensions
 
     public static long? GetSafeUserId(this IUpdateContext context)
     {
+        if (context.UserId.HasValue)
+        {
+            return context.UserId.Value;
+        }
         return context.Update.Message?.From?.Id
                ?? context.Update.EditedMessage?.From?.Id
                ?? context.Update.CallbackQuery?.From?.Id
@@ -38,6 +52,11 @@ public static class UpdateContextExtensions
 
     public static long UserId(this IUpdateContext context)
     {
+        if (context.UserId.HasValue)
+        {
+            return context.UserId.Value;
+        }
+        
         var value = context.Update.Message?.From?.Id
                ?? context.Update.EditedMessage?.From?.Id
                ?? context.Update.CallbackQuery?.From?.Id

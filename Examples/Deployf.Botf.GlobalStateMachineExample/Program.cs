@@ -3,13 +3,19 @@ using Telegram.Bot.Types.Enums;
 
 class Program : BotfProgram
 {
-    public static void Main(string[] args) => StartBot(args);
+    private static IServiceProvider RootProvider;
+    public static void Main(string[] args) => StartBot(args, onRun: (app, conf) =>
+    {
+        // need to have root provider to create scope for SetStateDeffered example
+        RootProvider = app.ApplicationServices;
+    });
 
     readonly ILogger<Program> _logger;
-
-    public Program(ILogger<Program> logger)
+    readonly IGlobalStateService _globalState;
+    public Program(ILogger<Program> logger, IGlobalStateService globalState)
     {
         _logger = logger;
+        _globalState = globalState;
     }
 
     [Action("Start")]
@@ -21,6 +27,7 @@ class Program : BotfProgram
         RowKButton(Q(State1Go));
         RowKButton(Q(Hello));
         RowKButton(Q(Check));
+        RowKButton(Q(SetStateDeffered));
     }
 
     [Action("State 1")]
@@ -40,6 +47,29 @@ class Program : BotfProgram
     public void Check()
     {
         Push($"This is main state");
+    }
+    
+    [Action("Deffered")]
+    public void SetStateDeffered()
+    {
+        Push($"I will set state in 2 sec for {FromId} to {nameof(State2)}");
+
+        var _ = SetDeffered(FromId);
+
+        async Task SetDeffered(long userId)
+        {
+            await Task.Delay(2000);
+
+            var scope = RootProvider.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<IGlobalStateService>();
+            await service.SetState(userId, new State2());
+        }
+    }
+    
+    [Action("/deffered")]
+    public async Task SetStateDefferedForUserId(long userId)
+    {
+        await _globalState.SetState(userId, new State2());
     }
 
     [On(Handle.Unknown)]
