@@ -111,6 +111,7 @@ public static class StartupExtensions
         services.AddScoped<IBotContextAccessor, BotContextAccessor>();
 
         services.AddScoped<BotUserService>();
+        services.AddScoped<IGlobalStateService, GlobalStateService>();
 
         services.AddTransient<BotfBot>();
         services.AddSingleton(options);

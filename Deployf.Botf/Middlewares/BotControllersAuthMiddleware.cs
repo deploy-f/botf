@@ -19,7 +19,7 @@ public class BotControllersAuthMiddleware : IUpdateHandler
         if(context.Items.TryGetValue("controller", out var value) && value is BotController controller)
         {
             var method = (MethodInfo)context.Items["action"];
-            var user = await GetUser(context);
+            var user = await _tokenService.GetUser(context.GetSafeUserId());
             context.Items["user"] = user;
             controller.User = user;
             AuthMethod(controller, method);
@@ -51,32 +51,5 @@ public class BotControllersAuthMiddleware : IUpdateHandler
         {
             throw new UnauthorizedAccessException();
         }
-    }
-
-    async Task<UserClaims> GetUser(IUpdateContext context)
-    {
-        var tgUserId = context.GetSafeUserId();
-        if (!tgUserId.HasValue)
-        {
-            _log.LogWarning("Telegram userId not found!");
-            return new UserClaims();
-        }
-
-        var (userId, roles) = await _tokenService.GetUserIdWithRoles(tgUserId.Value);
-        if (userId == null)
-        {
-            _log.LogDebug("User with {tgUserId} not found in database", tgUserId.Value);
-            return new UserClaims();
-        }
-
-        var claim = new UserClaims()
-        {
-            Roles = roles ?? new string[0],
-            IsAuthorized = true,
-            Id = userId
-        };
-
-        _log.LogDebug("User {@User} with {tgUserId} found", claim, tgUserId.Value);
-        return claim;
     }
 }

@@ -11,5 +11,8 @@ namespace Telegram.Bot.Framework.Abstractions
         IServiceProvider Services { get; }
 
         IDictionary<string, object> Items { get; }
+        
+        long? UserId { get; set; }
+        long? ChatId { get; set; }
     }
 }

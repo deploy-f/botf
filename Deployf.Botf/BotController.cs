@@ -69,77 +69,8 @@ public abstract class BotController
 
     protected async ValueTask GlobalState(object? state)
     {
-        if(state == null)
-        {
-            if(await Store!.Contain(FromId, Consts.GLOBAL_STATE))
-            {
-                var oldState = await Store!.Get(FromId, Consts.GLOBAL_STATE, null);
-                if (oldState != null)
-                {
-                    await Call(true, oldState);
-                }
-            }
-            await Store!.Remove(FromId, Consts.GLOBAL_STATE);
-            await CallClear();
-        }
-        else
-        {
-            if (await Store!.Contain(FromId, Consts.GLOBAL_STATE))
-            {
-                var oldState = await Store!.Get(FromId, Consts.GLOBAL_STATE, null);
-                if (oldState != null)
-                {
-                    await Call(true, oldState);
-                }
-            }
-            await Store!.Set(FromId, Consts.GLOBAL_STATE, state);
-            await Call(false, state);
-        }
-
-        async ValueTask Call(bool leave, object oldState)
-        {
-            var routes = Context!.Services.GetRequiredService<BotControllerRoutes>();
-            var controllerType = routes.GetStateType(oldState.GetType());
-            if (controllerType != null)
-            {
-                var controller = (BotControllerState)Context!.Services.GetRequiredService(controllerType);
-                controller.Init(Context, CancelToken);
-                controller.User = User;
-                await controller.OnBeforeCall();
-                if (leave)
-                {
-                    await controller.OnLeave();
-                }
-                else
-                {
-                    await controller.OnEnter();
-                }
-                await controller.OnAfterCall();
-            }
-        }
-
-        async ValueTask CallClear()
-        {
-            var handlersContainer = Context!.Services.GetRequiredService<BotControllerHandlers>();
-            var lookup = handlersContainer.GetHandlers(Handle.ClearState);
-            if(lookup == null)
-            {
-                return;
-            }
-
-            var invoker = Context.Services.GetRequiredService<BotControllersInvoker>();
-            foreach (var handler in lookup)
-            {
-                if(Context.IsHandlingStopRequested())
-                {
-                    break;
-                }
-                if(handler.TryFilter(Context))
-                {
-                    await invoker.Invoke(Context, CancelToken, handler.TargetMethod);
-                }
-            }
-        }
+        var service = Context.Services.GetRequiredService<IGlobalStateService>();
+        await service.SetState(FromId, state, cancelToken: CancelToken);
     }
     #endregion
 
