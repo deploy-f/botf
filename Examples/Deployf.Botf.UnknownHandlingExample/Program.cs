@@ -82,6 +82,15 @@ class Program : BotfProgram
         Context.StopHandling();
     }
     
+    [On(Handle.Unknown)]
+    [Filter(Filters.Location)]
+    public void UnknownLocationHandler()
+    {
+        Reply();
+        PushL("Thank you, I will meet you there");
+        Context.StopHandling();
+    }
+    
     // This handler will process all new text messages.
     // But if previus handler has called `Context.StopHandling()` it will not be handled.
     [On(Handle.Unknown)]
