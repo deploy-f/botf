@@ -42,6 +42,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deployf.Botf.ControllerStat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deployf.Botf.SendAndUpdateMessagesExample", "Examples\Deployf.Botf.SendAndUpdateMessagesExample\Deployf.Botf.SendAndUpdateMessagesExample.csproj", "{97A62A25-904D-492D-9AB5-28B8CCFC2748}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deployf.Botf.SourceGenerator", "Deployf.Botf.SourceGenerator\Deployf.Botf.SourceGenerator.csproj", "{73B14115-7631-4C3D-9700-7E18B42468E1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -108,6 +110,10 @@ Global
 		{97A62A25-904D-492D-9AB5-28B8CCFC2748}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97A62A25-904D-492D-9AB5-28B8CCFC2748}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{97A62A25-904D-492D-9AB5-28B8CCFC2748}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73B14115-7631-4C3D-9700-7E18B42468E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73B14115-7631-4C3D-9700-7E18B42468E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73B14115-7631-4C3D-9700-7E18B42468E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73B14115-7631-4C3D-9700-7E18B42468E1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

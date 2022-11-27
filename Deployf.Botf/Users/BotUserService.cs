@@ -5,7 +5,7 @@ namespace Deployf.Botf;
 public class BotUserService
 {
     readonly IBotUserService? _userService;
-    private readonly ILogger<BotUserService> _log;
+    private readonly ILogger<BotUserService>? _log;
     
     public BotUserService(IBotUserService? userService, ILogger<BotUserService> log)
     {

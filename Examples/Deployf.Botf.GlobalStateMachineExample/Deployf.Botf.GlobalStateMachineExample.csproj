@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Deployf.Botf\Deployf.Botf.csproj" />
+
+    <ProjectReference Include="..\..\Deployf.Botf.SourceGenerator\Deployf.Botf.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

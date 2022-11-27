@@ -28,7 +28,7 @@
   <ItemGroup>
     <PackageReference Include="Telegram.Bot" Version="18.0.0" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <None Update="deployf_logo_sq_128.png">
       <Pack>True</Pack>
