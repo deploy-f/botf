@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Telegram.Bot;
 using Telegram.Bot.Framework.Abstractions;
 using Telegram.Bot.Types;
@@ -20,6 +21,12 @@ public abstract class BotController
     protected MessageBuilder Message { get; set; } = new MessageBuilder();
     public IKeyValueStorage? Store { get; set; }
     public int? MessageId { get; set; }
+    
+    /// <summary>
+    /// Used with <see cref="BotfOptions.AutoCleanLastMessage"/> and <see cref="BotfOptions.AutoCleanReplyKeyboard"/>
+    /// to override the logic and not to store the message to clean it on next update.
+    /// </summary>
+    public bool DontSaveMessageId { get; set; }
 
     protected bool IsDirty
     {
@@ -160,8 +167,8 @@ public abstract class BotController
                 cancellationToken: CancelToken,
                 replyToMessageId: Message.ReplyToMessageId);
         }
-        await TryCleanLastMessageReplyKeyboard();
-        await TrySaveLastMessageId(Message.Markup as InlineKeyboardMarkup, message);
+        await TryCleanUpLastMessage();
+        await TrySaveLastMessageId(message);
         ClearMessage();
         return message;
     }
@@ -188,7 +195,7 @@ public abstract class BotController
             replyMarkup: markupValue,
             cancellationToken: CancelToken
         );
-        await TrySaveLastMessageId(markupValue, message);
+        await TrySaveLastMessageId(message);
         ClearMessage();
         return message;
     }
@@ -216,52 +223,67 @@ public abstract class BotController
         return null;
     }
 
-    private async ValueTask TrySaveLastMessageId(InlineKeyboardMarkup? markupValue, Telegram.Bot.Types.Message message)
+    private async ValueTask TrySaveLastMessageId(Message message)
     {
         try
         {
-            if (Context!.Bot is BotfBot bot && bot.Options.AutoCleanReplyKeyboard)
+            if (Context!.Bot is not BotfBot bot || !bot.Options.SaveLastMessageId)
             {
-                if (markupValue != null)
-                {
-                    await Store!.Set(FromId, LAST_MESSAGE_ID_KEY, $"{message.Chat.Id};{message.MessageId}");
-                }
-                else
-                {
-                    await Store!.Remove(FromId, LAST_MESSAGE_ID_KEY);
-                }
+                return;
             }
+
+            await Store!.Set(FromId, LAST_MESSAGE_ID_KEY, $"{message.Chat.Id};{message.MessageId}");
         }
         catch (Exception e)
         {
             var logger = Context.Services.GetService<ILogger<BotController>>();
-            logger?.LogError(e, "Error while trying to set last message reply keyboard for clean it in future");
+            logger?.LogWarning(e, "Error while trying to set last message reply keyboard for clean it in future");
         }
     }
 
-    private async ValueTask TryCleanLastMessageReplyKeyboard()
+    private async ValueTask TryCleanUpLastMessage()
     {
         try
         {
-            if (Context!.Bot is BotfBot bot && bot.Options.AutoCleanReplyKeyboard)
+            if (Context!.Bot is not BotfBot bot || !bot.Options.SaveLastMessageId)
             {
-                if (await Store!.Contain(FromId, LAST_MESSAGE_ID_KEY))
-                {
-                    var data = await Store.Get<string>(FromId, LAST_MESSAGE_ID_KEY, null);
-                    if (data != null)
-                    {
-                        var items = data.Split(';');
-                        var chatId = long.Parse(items[0]);
-                        var messageId = int.Parse(items[1]);
-                        await Client.EditMessageReplyMarkupAsync(chatId, messageId, null);
-                    }
-                }
+                return;
+            }
+
+            if (!await Store!.Contain(FromId, LAST_MESSAGE_ID_KEY))
+            {
+                return;
+            }
+
+            var data = await Store.Get<string>(FromId, LAST_MESSAGE_ID_KEY, null);
+            if (data == null)
+            {
+                await Store!.Remove(FromId, LAST_MESSAGE_ID_KEY);
+                return;
+            }
+            
+            var items = data.Split(';');
+            var chatId = long.Parse(items[0]);
+            var messageId = int.Parse(items[1]);
+            
+            if (bot.Options.AutoCleanReplyKeyboard && !bot.Options.AutoCleanLastMessage)
+            {
+                await Client.EditMessageReplyMarkupAsync(chatId, messageId, null, CancelToken);
+            }
+            else if (bot.Options.AutoCleanLastMessage)
+            {
+                await Client.DeleteMessageAsync(chatId, messageId, CancelToken);
+            }
+
+            if (bot.Options.SaveLastMessageId)
+            {
+                await Store!.Remove(FromId, LAST_MESSAGE_ID_KEY);;
             }
         }
         catch(Exception e)
         {
             var logger = Context.Services.GetService<ILogger<BotController>>();
-            logger?.LogError(e, "Error while trying to clean last message reply keyboard");
+            logger?.LogWarning(e, "Error while trying to clean last message reply keyboard");
         }
     }
     #endregion

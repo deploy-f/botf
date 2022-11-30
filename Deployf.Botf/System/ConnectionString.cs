@@ -83,6 +83,16 @@ public class ConnectionString
                         throw new BotfException("`autoclean` configuration option has wrong format, it should be a bool convertable value like true|false|1|0|True|False");
                     }
                     break;
+                case "keep_clean":
+                    if (bool.TryParse(cortage[1], out var keepclean))
+                    {
+                        options.AutoCleanLastMessage = keepclean;
+                    }
+                    else
+                    {
+                        throw new BotfException("`keep_clean` configuration option has wrong format, it should be a bool convertable value like true|false|1|0|True|False");
+                    }
+                    break;
                 case "chain_timeout":
                     options.ChainTimeout = cortage[1].TryParseTimeSpan();
                     break;
