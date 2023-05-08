@@ -6,11 +6,11 @@ namespace Deployf.Botf.System.UpdateMessageStrategies;
 /// <summary>
 /// Situation: previous message has a media file and a new message has one.
 /// </summary>
-public class FileStrategy3 : IUpdateMessageStrategy
+public class MediaToMediaFileStrategy : IUpdateMessageStrategy
 {
     private readonly BotfBot _bot;
 
-    public FileStrategy3(BotfBot bot)
+    public MediaToMediaFileStrategy(BotfBot bot)
     {
         _bot = bot;
     }

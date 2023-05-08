@@ -134,9 +134,9 @@ public static class StartupExtensions
         services.AddSingleton<IArgumentBind, ArgumentBindBridge>();
         services.AddSingleton<ArgumentBinder>();
 
-        services.AddSingleton<IUpdateMessageStrategy, FileStrategy1>();
-        services.AddSingleton<IUpdateMessageStrategy, FileStrategy2>();
-        services.AddSingleton<IUpdateMessageStrategy, FileStrategy3>();
+        services.AddSingleton<IUpdateMessageStrategy, MediaToPlainTextStrategy>();
+        services.AddSingleton<IUpdateMessageStrategy, PlainTextToMediaStrategy>();
+        services.AddSingleton<IUpdateMessageStrategy, MediaToMediaFileStrategy>();
         services.AddSingleton<IUpdateMessageStrategy, EditTextMessageStrategy>();
         services.AddSingleton<IUpdateMessageStrategyFactory, UpdateMessageStrategyFactory>();
 
