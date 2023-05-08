@@ -1,4 +1,5 @@
-﻿using Telegram.Bot;
+﻿using Deployf.Botf.System.UpdateMessageStrategies;
+using Telegram.Bot;
 using Telegram.Bot.Framework;
 using Telegram.Bot.Framework.Abstractions;
 using Telegram.Bot.Requests;
@@ -132,6 +133,12 @@ public static class StartupExtensions
         services.AddSingleton<IArgumentBind, ArgumentAttributeBindState>();
         services.AddSingleton<IArgumentBind, ArgumentBindBridge>();
         services.AddSingleton<ArgumentBinder>();
+
+        services.AddSingleton<IUpdateMessageStrategy, MediaToPlainTextStrategy>();
+        services.AddSingleton<IUpdateMessageStrategy, PlainTextToMediaStrategy>();
+        services.AddSingleton<IUpdateMessageStrategy, MediaToMediaFileStrategy>();
+        services.AddSingleton<IUpdateMessageStrategy, EditTextMessageStrategy>();
+        services.AddSingleton<IUpdateMessageStrategyFactory, UpdateMessageStrategyFactory>();
 
         return services;
     }

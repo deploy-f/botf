@@ -1,12 +1,14 @@
+using System.Runtime.Serialization;
+
 namespace Deployf.Botf;
 
-[System.Serializable]
-public class BotfException : System.Exception
+[Serializable]
+public class BotfException : Exception
 {
     public BotfException() { }
     public BotfException(string message) : base(message) { }
-    public BotfException(string message, System.Exception inner) : base(message, inner) { }
+    public BotfException(string message, Exception inner) : base(message, inner) { }
     protected BotfException(
-        System.Runtime.Serialization.SerializationInfo info,
-        System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+        SerializationInfo info,
+        StreamingContext context) : base(info, context) { }
 }

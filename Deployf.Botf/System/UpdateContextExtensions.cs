@@ -5,6 +5,7 @@ namespace Deployf.Botf;
 
 public static class UpdateContextExtensions
 {
+    private const string UPDATE_MESSAGE_POLICY_KEY = "$_UpdateMessagePolicy";
     private const string STOP_HANDLING_KEY = "$_StopHandling";
     private const string CURRENT_HANDLER_KEY = "$_CurrentHandler";
     private const string FILTER_PARAMETER_KEY = "$_FilterParameter";
@@ -200,4 +201,25 @@ public static class UpdateContextExtensions
 
         return null;
     }
+    
+    public static void SetUpdateMsgPolicy(this IUpdateContext context, UpdateMessagePolicy policy)
+    {
+        context.Items[UPDATE_MESSAGE_POLICY_KEY] = policy;
+    }
+    
+    public static UpdateMessagePolicy? GetCurrentUpdateMsgPolicy(this IUpdateContext context)
+    {
+        if(context.Items.TryGetValue(UPDATE_MESSAGE_POLICY_KEY, out var policy) && policy is UpdateMessagePolicy result)
+        {
+            return result;
+        }
+
+        return null;
+    }
+}
+
+public enum UpdateMessagePolicy
+{
+    UpdateContent = 0, // default
+    DeleteAndSend = 1
 }

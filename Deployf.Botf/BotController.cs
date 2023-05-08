@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Deployf.Botf.System.UpdateMessageStrategies;
 using Telegram.Bot;
 using Telegram.Bot.Framework.Abstractions;
 using Telegram.Bot.Types;
@@ -19,6 +20,7 @@ public abstract class BotController
     protected ITelegramBotClient Client { get; set; } = null!;
     protected MessageBuilder Message { get; set; } = new MessageBuilder();
     public IKeyValueStorage? Store { get; set; }
+    public IUpdateMessageStrategyFactory UpdateMessageStrategyFactory { get; set; }
     public int? MessageId { get; set; }
 
     protected bool IsDirty
@@ -35,6 +37,7 @@ public abstract class BotController
         FromId = Context.GetSafeUserId().GetValueOrDefault();
         Client = Context.Bot.Client;
         Store = Context.Services.GetService<IKeyValueStorage>(); // todo: move outside
+        UpdateMessageStrategyFactory = Context.Services.GetRequiredService<IUpdateMessageStrategyFactory>();
         Message = new MessageBuilder();
     }
 
@@ -180,14 +183,46 @@ public abstract class BotController
     {
         var markupValue = markup ?? Message.Markup as InlineKeyboardMarkup;
         IsDirty = false;
-        var message = await Client.EditMessageTextAsync(
-            ChatId == 0 ? Context!.GetSafeChatId()! : ChatId,
-            MessageId ?? Context!.GetSafeMessageId().GetValueOrDefault(),
-            text ?? Message.Message,
-            parseMode: mode,
-            replyMarkup: markupValue,
-            cancellationToken: CancelToken
-        );
+
+        var chatId = Context!.GetSafeChatId()!.Value;
+        var messageId = MessageId ?? Context!.GetSafeMessageId().GetValueOrDefault();
+        var messageText = text ?? Message.Message;
+        var previousMessage = Context.Update.CallbackQuery!.Message;
+        var nextMessagePhotoUrl = Message.PhotoUrl;
+
+        var ctx = new UpdateMessageContext(
+            Context,
+            chatId,
+            messageId,
+            messageText,
+            previousMessage!,
+            nextMessagePhotoUrl,
+            markupValue,
+            mode,
+            Message.ReplyToMessageId,
+            CancelToken);
+
+        Message message;
+        var strategy = UpdateMessageStrategyFactory.GetStrategy(ctx);
+        if (strategy == null)
+        {
+            var logger = Context.Services.GetRequiredService<ILogger<BotController>>();
+            logger.LogDebug("Not found a suitable strategy, using default instead");
+
+            message = await Client.EditMessageTextAsync(
+                ChatId == 0 ? Context!.GetSafeChatId()! : ChatId,
+                MessageId ?? Context!.GetSafeMessageId().GetValueOrDefault(),
+                text ?? Message.Message,
+                parseMode: mode,
+                replyMarkup: markupValue,
+                cancellationToken: CancelToken
+            );
+        }
+        else
+        {
+            message = await strategy.UpdateMessage(ctx);
+        }
+
         await TrySaveLastMessageId(markupValue, message);
         ClearMessage();
         return message;
@@ -384,6 +419,16 @@ public abstract class BotController
         }
     }
 
+    /// <summary>
+    /// Sets photo for message
+    /// </summary>
+    /// <remarks>Attention! Telegram limit is 0-1024 characters for text messages with images</remarks>
+    /// <param name="url">
+    /// Photo url to send. Pass a FileId as String to send a photo that exists on
+    /// the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a photo from
+    /// the Internet. The photo must be at most 10 MB in size.
+    /// The photo's width and height must not exceed 10000 in total. Width and height ratio must be at most 20
+    /// </param>
     public void Photo(string url)
     {
         Message.SetPhotoUrl(url);
