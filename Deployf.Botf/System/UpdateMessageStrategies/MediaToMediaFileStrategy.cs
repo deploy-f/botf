@@ -45,7 +45,8 @@ public class MediaToMediaFileStrategy : IUpdateMessageStrategy
                 context.MessageId,
                 new InputMediaPhoto(context.MediaFile!)
                 {
-                    Caption = context.MessageText
+                    Caption = context.MessageText,
+                    ParseMode = context.ParseMode
                 },
                 replyMarkup: context.KeyboardMarkup,
                 cancellationToken: context.CancelToken
