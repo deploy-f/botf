@@ -32,11 +32,27 @@ public static class UpdateContextExtensions
         {
             return context.ChatId.Value;
         }
-        
+
         return context.Update.Message?.Chat.Id
                ?? context.Update.EditedMessage?.Chat.Id
+               ?? context.Update.ChannelPost?.Chat.Id
+               ?? context.Update.EditedChannelPost?.Chat.Id
                ?? context.Update.CallbackQuery?.Message?.Chat.Id
-               ?? context.Update.InlineQuery?.From.Id;
+               ?? context.Update.MyChatMember?.Chat.Id
+               ?? context.Update.ChatMember?.Chat.Id
+               ?? context.Update.ChatJoinRequest?.Chat.Id;
+    }
+
+    public static Chat? GetSafeChat(this IUpdateContext context)
+    {
+        return context.Update.Message?.Chat
+               ?? context.Update.EditedMessage?.Chat
+               ?? context.Update.ChannelPost?.Chat
+               ?? context.Update.EditedChannelPost?.Chat
+               ?? context.Update.CallbackQuery?.Message?.Chat
+               ?? context.Update.MyChatMember?.Chat
+               ?? context.Update.ChatMember?.Chat
+               ?? context.Update.ChatJoinRequest?.Chat;
     }
 
     public static long? GetSafeUserId(this IUpdateContext context)
@@ -47,8 +63,34 @@ public static class UpdateContextExtensions
         }
         return context.Update.Message?.From?.Id
                ?? context.Update.EditedMessage?.From?.Id
+               ?? context.Update.ChannelPost?.From?.Id
+               ?? context.Update.EditedChannelPost?.From?.Id
+               ?? context.Update.InlineQuery?.From.Id
+               ?? context.Update.ChosenInlineResult?.From.Id
                ?? context.Update.CallbackQuery?.From?.Id
-               ?? context.Update.InlineQuery?.From.Id;
+               ?? context.Update.ShippingQuery?.From.Id
+               ?? context.Update.PreCheckoutQuery?.From.Id
+               ?? context.Update.PollAnswer?.User.Id
+               ?? context.Update.MyChatMember?.From.Id
+               ?? context.Update.ChatMember?.From.Id
+               ?? context.Update.ChatJoinRequest?.From.Id;
+    }
+    
+    public static User? GetSafeUser(this IUpdateContext context)
+    {
+        return context.Update.Message?.From
+               ?? context.Update.EditedMessage?.From
+               ?? context.Update.ChannelPost?.From
+               ?? context.Update.EditedChannelPost?.From
+               ?? context.Update.InlineQuery?.From
+               ?? context.Update.ChosenInlineResult?.From
+               ?? context.Update.CallbackQuery?.From
+               ?? context.Update.ShippingQuery?.From
+               ?? context.Update.PreCheckoutQuery?.From
+               ?? context.Update.PollAnswer?.User
+               ?? context.Update.MyChatMember?.From
+               ?? context.Update.ChatMember?.From
+               ?? context.Update.ChatJoinRequest?.From;
     }
 
     public static long UserId(this IUpdateContext context)

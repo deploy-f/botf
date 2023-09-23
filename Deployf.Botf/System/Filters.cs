@@ -275,6 +275,21 @@ public static class FiltersImpl
         return update.Type == UpdateType.Message
             && update.Message!.Type == MessageType.Sticker;
     }
+    
+    public static bool FilterSuccessfulPayment(IUpdateContext ctx)
+    {
+        var update = ctx.Update;
+
+        return update.Type == UpdateType.Message
+               && update.Message!.Type == MessageType.SuccessfulPayment;
+    }
+    
+    public static bool FilterPreCheckoutQuery(IUpdateContext ctx)
+    {
+        var update = ctx.Update;
+
+        return update.Type == UpdateType.PreCheckoutQuery;
+    }
 
     private static readonly Dictionary<string, Regex> _regexCache = new ();
     public static bool FilterRegex(IUpdateContext ctx)
