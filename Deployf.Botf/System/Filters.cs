@@ -25,6 +25,8 @@ public static class Filters
     public const string PrivateChat = $"{_BASE}.{nameof(FiltersImpl.FilterPrivateChats)}";
     public const string GroupChat = $"{_BASE}.{nameof(FiltersImpl.FilterGroupChats)}";
     public const string Type = $"{_BASE}.{nameof(FiltersImpl.FilterType)}";
+    public const string SuccessfulPayment = $"{_BASE}.{nameof(FiltersImpl.FilterSuccessfulPayment)}";
+    public const string PreCheckoutQuery = $"{_BASE}.{nameof(FiltersImpl.FilterPreCheckoutQuery)}";
 }
 
 public static class FiltersImpl
