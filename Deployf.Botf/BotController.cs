@@ -147,6 +147,7 @@ public abstract class BotController
             message = await Client.SendTextMessageAsync(
                 ChatId == 0 ? Context!.GetSafeChatId()! : ChatId,
                 text,
+                null,
                 ParseMode.Html,
                 replyMarkup: Message.Markup,
                 cancellationToken: CancelToken,
@@ -156,7 +157,8 @@ public abstract class BotController
         {
             message = await Client.SendPhotoAsync(
                 ChatId == 0 ? Context!.GetSafeChatId()! : ChatId,
-                Message.PhotoUrl,
+                new InputFileUrl(Message.PhotoUrl),
+                null,
                 text,
                 ParseMode.Html,
                 replyMarkup: Message.Markup,
@@ -196,7 +198,7 @@ public abstract class BotController
             messageId,
             messageText,
             previousMessage!,
-            nextMessagePhotoUrl,
+            new InputMediaPhoto(new InputFileUrl(nextMessagePhotoUrl)),
             markupValue,
             mode,
             Message.ReplyToMessageId,

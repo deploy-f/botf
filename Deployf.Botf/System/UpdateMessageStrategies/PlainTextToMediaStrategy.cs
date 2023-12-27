@@ -27,7 +27,8 @@ public class PlainTextToMediaStrategy : IUpdateMessageStrategy
         await _bot.Client.DeleteMessageAsync(context.ChatId, context.PreviousMessage.MessageId, context.CancelToken);
         return await _bot.Client.SendPhotoAsync(
             context.ChatId,
-            context.MediaFile!,
+            context.MediaFile!.Media,
+            null,
             context.MessageText,
             context.ParseMode,
             replyMarkup: context.KeyboardMarkup,

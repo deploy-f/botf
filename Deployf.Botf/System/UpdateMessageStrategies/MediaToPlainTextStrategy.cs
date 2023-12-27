@@ -28,6 +28,7 @@ public class MediaToPlainTextStrategy : IUpdateMessageStrategy
         return await _bot.Client.SendTextMessageAsync(
             context.ChatId,
             context.MessageText,
+            null,
             context.ParseMode,
             replyMarkup: context.KeyboardMarkup,
             cancellationToken: context.CancelToken,
