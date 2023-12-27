@@ -17,9 +17,8 @@ public class EditTextMessageStrategy : IUpdateMessageStrategy
     
     public bool CanHandle(IUpdateMessageContext context)
     {
-        var newMessageFileIsEmpty = string.IsNullOrEmpty(context.MediaFile?.FileId) &&
-                                    string.IsNullOrEmpty(context.MediaFile?.Url);
-        
+        var newMessageFileIsEmpty = context.MediaFile is InputMediaDocument;
+
         return context.PreviousMessage.Photo == null && newMessageFileIsEmpty;
     }
 

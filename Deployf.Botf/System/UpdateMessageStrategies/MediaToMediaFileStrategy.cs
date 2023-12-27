@@ -17,9 +17,8 @@ public class MediaToMediaFileStrategy : IUpdateMessageStrategy
     
     public bool CanHandle(IUpdateMessageContext context)
     {
-        var newMessageHasFile = !string.IsNullOrEmpty(context.MediaFile?.FileId) ||
-                                !string.IsNullOrEmpty(context.MediaFile?.Url);
-        
+        var newMessageHasFile = context.MediaFile is InputMediaDocument;
+
         return context.PreviousMessage.Photo != null && newMessageHasFile;
     }
 
