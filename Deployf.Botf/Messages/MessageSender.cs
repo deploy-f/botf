@@ -20,6 +20,7 @@ public class MessageSender
             return await _client.SendTextMessageAsync(
                 message.ChatId,
                 message.Message,
+                null,
                 message.ParseMode,
                 replyMarkup: message.Markup,
                 cancellationToken: token,
@@ -30,7 +31,8 @@ public class MessageSender
         {
             return await _client.SendPhotoAsync(
                 message.ChatId,
-                message.PhotoUrl,
+                new InputFileUrl(message.PhotoUrl),
+                null,
                 message.Message,
                 message.ParseMode,
                 replyMarkup: message.Markup,

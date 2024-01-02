@@ -17,9 +17,8 @@ public class MediaToMediaFileStrategy : IUpdateMessageStrategy
     
     public bool CanHandle(IUpdateMessageContext context)
     {
-        var newMessageHasFile = !string.IsNullOrEmpty(context.MediaFile?.FileId) ||
-                                !string.IsNullOrEmpty(context.MediaFile?.Url);
-        
+        var newMessageHasFile = context.MediaFile is InputMediaDocument;
+
         return context.PreviousMessage.Photo != null && newMessageHasFile;
     }
 
@@ -31,7 +30,8 @@ public class MediaToMediaFileStrategy : IUpdateMessageStrategy
             await _bot.Client.DeleteMessageAsync(context.ChatId, context.PreviousMessage.MessageId, context.CancelToken);
             return await _bot.Client.SendPhotoAsync(
                 context.ChatId,
-                context.MediaFile!,
+                context.MediaFile!.Media,
+                null,
                 context.MessageText,
                 context.ParseMode,
                 replyMarkup: context.KeyboardMarkup,
@@ -43,7 +43,7 @@ public class MediaToMediaFileStrategy : IUpdateMessageStrategy
             return await _bot.Client.EditMessageMediaAsync(
                 context.ChatId,
                 context.MessageId,
-                new InputMediaPhoto(context.MediaFile!)
+                new InputMediaPhoto(context.MediaFile!.Media)
                 {
                     Caption = context.MessageText,
                     ParseMode = context.ParseMode

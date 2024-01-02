@@ -17,9 +17,8 @@ public class MediaToPlainTextStrategy : IUpdateMessageStrategy
     
     public bool CanHandle(IUpdateMessageContext context)
     {
-        var newMessageFileIsEmpty = string.IsNullOrEmpty(context.MediaFile?.FileId) &&
-                                    string.IsNullOrEmpty(context.MediaFile?.Url);
-        
+        var newMessageFileIsEmpty = context.MediaFile is InputMediaDocument;
+
         return context.PreviousMessage.Photo != null && newMessageFileIsEmpty;
     }
 
@@ -29,6 +28,7 @@ public class MediaToPlainTextStrategy : IUpdateMessageStrategy
         return await _bot.Client.SendTextMessageAsync(
             context.ChatId,
             context.MessageText,
+            null,
             context.ParseMode,
             replyMarkup: context.KeyboardMarkup,
             cancellationToken: context.CancelToken,
